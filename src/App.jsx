@@ -12,8 +12,8 @@ const useIsPC = () => {
 
 const HEX=36,S3=Math.sqrt(3),DEPTH=8;
 const TC={forest:4,hill:3,pasture:4,field:4,mountain:3,desert:1};
-const TCOL={forest:['#1a4d0f','#2d6b1b','#3a8526'],hill:['#8b3a0e','#c1540e','#d4722a'],pasture:['#4a9030','#6cbf48','#8fd668'],field:['#c49a20','#e8c038','#f5d84a'],mountain:['#555568','#7a7a90','#9595a8'],desert:['#c4a060','#d4b88a','#e0cca0']};
-const TSIDE={forest:'#0f3508',hill:'#5a2508',pasture:'#2a6018',field:'#8a6a10',mountain:'#3a3a48',desert:'#9a7a40'};
+const TCOL={forest:['#15803d','#16a34a','#4ade80'],hill:['#b45309','#d97706','#fbbf24'],pasture:['#65a30d','#84cc16','#bef264'],field:['#ca8a04','#eab308','#fde047'],mountain:['#57534e','#78716c','#a8a29e'],desert:['#d97706','#f59e0b','#fcd34d']};
+const TSIDE={forest:'#14532d',hill:'#92400e',pasture:'#3f6212',field:'#713f12',mountain:'#44403c',desert:'#b45309'};
 const RMAP={forest:'wood',hill:'brick',pasture:'sheep',field:'wheat',mountain:'ore'};
 const REMJ={wood:'🪵',brick:'🧱',sheep:'🐑',wheat:'🌾',ore:'⛏️'};
 const RCOL={wood:'#6d4c2a',brick:'#c1440e',sheep:'#5da040',wheat:'#daa520',ore:'#7a7a8a'};
@@ -24,9 +24,9 @@ const COST={road:{wood:1,brick:1,sheep:0,wheat:0,ore:0},settlement:{wood:1,brick
 const DEVDECK=[...Array(14).fill('knight'),...Array(5).fill('vp')];
 const OW={P:'player',N1:'npc1',N2:'npc2'};
 const OCOL={
-  player:{m:'#ffd700',l:'#fff4b0',s:'#aa8800',bg:'rgba(255,215,0,.12)',name:'あなた',emoji:'✨'},
-  npc1:{m:'#ff5555',l:'#ffaaaa',s:'#cc2222',bg:'rgba(255,85,85,.12)',name:'赤',emoji:'🔥'},
-  npc2:{m:'#55aaff',l:'#aaddff',s:'#2266cc',bg:'rgba(85,170,255,.12)',name:'青',emoji:'💧'},
+  player:{m:'#f59e0b',l:'#fef3c7',s:'#d97706',bg:'rgba(245,158,11,.1)',name:'あなた',emoji:'✨'},
+  npc1:{m:'#ef4444',l:'#fee2e2',s:'#dc2626',bg:'rgba(239,68,68,.1)',name:'赤',emoji:'🔥'},
+  npc2:{m:'#3b82f6',l:'#dbeafe',s:'#2563eb',bg:'rgba(59,130,246,.1)',name:'青',emoji:'💧'},
 };
 const SEATS={player:{x:0,y:188},npc1:{x:-175,y:-120},npc2:{x:175,y:-120}};
 const HEXPOS=[{q:0,r:0},{q:1,r:0},{q:0,r:1},{q:-1,r:1},{q:-1,r:0},{q:0,r:-1},{q:1,r:-1},{q:2,r:0},{q:1,r:1},{q:0,r:2},{q:-1,r:2},{q:-2,r:2},{q:-2,r:1},{q:-2,r:0},{q:-1,r:-1},{q:0,r:-2},{q:1,r:-2},{q:2,r:-2},{q:2,r:-1}];
@@ -119,10 +119,10 @@ function Hex3D({t,showR,robId,onClick,glow}){
     <polygon points={top} fill={`url(#tg_${t.type})`} stroke="#2a1a0a" strokeWidth="1.5" opacity={t.rob&&t.type!=='desert'?.35:1}/>
     <polygon points={hC(t.cx,t.cy).map(c=>`${c.x*.92+t.cx*.08},${c.y*.92+t.cy*.08}`).join(' ')} fill="none" stroke="rgba(255,255,255,.1)" strokeWidth=".5"/>
     <TerrainDeco type={t.type} cx={t.cx} cy={t.cy}/>
-    {t.num>0&&!t.rob&&<g><circle cx={t.cx} cy={t.cy+6} r="10" fill="#fdf6e3" stroke="#5a4020" strokeWidth="1" filter="url(#hs)"/><text x={t.cx} y={t.cy+10} textAnchor="middle" fontSize="10" fontWeight="bold" fill={t.num===6||t.num===8?'#cc2200':'#3a2a1a'} style={{pointerEvents:'none'}}>{t.num}</text><text x={t.cx} y={t.cy+15} textAnchor="middle" fontSize="4.5" fill={t.num===6||t.num===8?'#cc2200':'#999'} style={{pointerEvents:'none'}}>{'•'.repeat(PIPS[t.num]||0)}</text></g>}
+    {t.num>0&&!t.rob&&<g><circle cx={t.cx} cy={t.cy+6} r="10" fill="#fffbeb" stroke="#d97706" strokeWidth="1.5" filter="url(#hs)"/><text x={t.cx} y={t.cy+10} textAnchor="middle" fontSize="10" fontWeight="bold" fill={t.num===6||t.num===8?'#cc2200':'#1c1917'} style={{pointerEvents:'none'}}>{t.num}</text><text x={t.cx} y={t.cy+15} textAnchor="middle" fontSize="4.5" fill={t.num===6||t.num===8?'#cc2200':'#a8a29e'} style={{pointerEvents:'none'}}>{'•'.repeat(PIPS[t.num]||0)}</text></g>}
     {t.rob&&t.type!=='desert'&&<text x={t.cx} y={t.cy+6} textAnchor="middle" fontSize="18" style={{pointerEvents:'none'}}>🦹</text>}
-    {rc&&<polygon points={top} fill="rgba(255,215,0,.15)" stroke="#ffd700" strokeWidth="2" strokeDasharray="4,2" style={{animation:'shimmer 1s infinite'}}/>}
-    {glow&&<polygon points={top} fill="rgba(255,255,150,.3)" stroke="#ffd700" strokeWidth="2" filter="url(#glow)" style={{animation:'tileGlow 1.4s ease-out forwards',pointerEvents:'none'}}/>}
+    {rc&&<polygon points={top} fill="rgba(249,115,22,.15)" stroke="#f97316" strokeWidth="2" strokeDasharray="4,2" style={{animation:'shimmer 1s infinite'}}/>}
+    {glow&&<polygon points={top} fill="rgba(253,224,71,.4)" stroke="#f59e0b" strokeWidth="2" filter="url(#glow)" style={{animation:'tileGlow 1.4s ease-out forwards',pointerEvents:'none'}}/>}
   </g>;
 }
 function TerrainDeco({type,cx,cy}){
@@ -152,7 +152,7 @@ function Avatar({x,y,owner,vp,active}){const c=OCOL[owner];
 }
 function ResCards({x,y,res,owner}){
   return <g transform={`translate(${x},${y})`}>{RK.map((r,i)=>{const cx=(i-2)*18;const count=res[r]||0;
-    return <g key={r} transform={`translate(${cx},0)`}><rect x="-7" y="-10" width="14" height="20" rx="2" fill="rgba(0,0,0,.4)" stroke={count>0?RCOL[r]:'rgba(255,255,255,.1)'} strokeWidth={count>0?1.2:.5}/><text x="0" y="-1" textAnchor="middle" fontSize="9" style={{pointerEvents:'none'}}>{REMJ[r]}</text><text x="0" y="8" textAnchor="middle" fontSize="7" fontWeight="800" fill={count>0?'#fff':'#555'} style={{pointerEvents:'none'}}>{count}</text></g>;
+    return <g key={r} transform={`translate(${cx},0)`}><rect x="-7" y="-10" width="14" height="20" rx="2" fill="rgba(0,0,0,.04)" stroke={count>0?RCOL[r]:'rgba(255,255,255,.1)'} strokeWidth={count>0?1.2:.5}/><text x="0" y="-1" textAnchor="middle" fontSize="9" style={{pointerEvents:'none'}}>{REMJ[r]}</text><text x="0" y="8" textAnchor="middle" fontSize="7" fontWeight="800" fill={count>0?'#fff':'#555'} style={{pointerEvents:'none'}}>{count}</text></g>;
   })}</g>;
 }
 
@@ -160,21 +160,22 @@ function PlayerCard({owner, vp, res, active}) {
   const c = OCOL[owner];
   return (
     <div style={{
-      border: `1.5px solid ${active ? c.m : 'rgba(100,150,200,.15)'}`,
-      borderRadius: 10,
-      padding: '8px 10px',
-      background: active ? `linear-gradient(135deg,${c.bg},rgba(0,0,0,.3))` : 'rgba(0,0,0,.2)',
+      border: `1.5px solid ${active ? c.s : 'rgba(0,0,0,.07)'}`,
+      borderRadius: 12,
+      padding: '10px 12px',
+      background: active ? c.l : '#ffffff',
+      boxShadow: active ? `0 4px 16px ${c.m}33` : '0 1px 4px rgba(0,0,0,.04)',
       transition: 'all .3s',
     }}>
       <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:6}}>
-        <span style={{color:c.m, fontWeight:700, fontSize:13}}>{c.emoji} {c.name}</span>
-        <span style={{color:'#ffd700', fontWeight:900, fontSize:18}}>{vp}VP</span>
+        <span style={{color:c.s, fontWeight:700, fontSize:13}}>{c.emoji} {c.name}</span>
+        <span style={{color:'#f59e0b', fontWeight:900, fontSize:18}}>{vp}VP</span>
       </div>
       <div style={{display:'flex', gap:6}}>
         {RK.map(r => (
           <div key={r} style={{textAlign:'center', flex:1, opacity:(res[r]||0)>0?1:.3}}>
             <div style={{fontSize:14}}>{REMJ[r]}</div>
-            <div style={{fontSize:11, color:'#fff', fontWeight:700}}>{res[r]||0}</div>
+            <div style={{fontSize:11, color:'#1c1917', fontWeight:700}}>{res[r]||0}</div>
           </div>
         ))}
       </div>
@@ -214,7 +215,7 @@ export default function SoloCatan(){
   const isPC = useIsPC();
 
   useEffect(()=>{
-    const link=document.createElement('link');link.href='https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Noto+Sans+JP:wght@400;600;700;900&display=swap';link.rel='stylesheet';document.head.appendChild(link);
+    const link=document.createElement('link');link.href='https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;600;700;800&family=Noto+Sans+JP:wght@400;600;700;900&display=swap';link.rel='stylesheet';document.head.appendChild(link);
     const sty=document.createElement('style');sty.textContent=`
       @keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
       @keyframes popIn{0%{transform:scale(0);opacity:0}50%{transform:scale(1.2)}100%{transform:scale(1);opacity:1}}
@@ -513,10 +514,10 @@ export default function SoloCatan(){
   if(screen==='title')return <div style={S.ctn}><div style={S.tW}>
     <div style={{fontSize:64}}>🏝️</div>
     <h1 style={S.h1}>ソロカタン</h1>
-    <p style={{fontSize:13,color:'#8bc4f0',letterSpacing:3}}>Island of Divine Settlers</p>
+    <p style={{fontSize:13,color:'#78716c',letterSpacing:3}}>Island of Divine Settlers</p>
     <div style={S.tBs}>
-      <button style={S.mB} onClick={()=>startGame('score_attack')}><span style={{fontSize:28}}>🎯</span><div><div style={{fontSize:15,fontWeight:700,color:'#ffd700'}}>スコアアタック</div><div style={{fontSize:11,color:'#8bc4f0'}}>15ターンVP最大化</div></div>{hs.sa>0&&<div style={S.hsT}>🏆{hs.sa}</div>}</button>
-      <button style={S.mB} onClick={()=>startGame('time_trial')}><span style={{fontSize:28}}>⏱️</span><div><div style={{fontSize:15,fontWeight:700,color:'#ffd700'}}>タイムトライアル</div><div style={{fontSize:11,color:'#8bc4f0'}}>10VP最速到達</div></div>{hs.tt<999&&<div style={S.hsT}>🏆{hs.tt}T</div>}</button>
+      <button style={S.mB} onClick={()=>startGame('score_attack')}><span style={{fontSize:28}}>🎯</span><div><div style={{fontSize:15,fontWeight:700,color:'#f97316'}}>スコアアタック</div><div style={{fontSize:11,color:'#78716c'}}>15ターンVP最大化</div></div>{hs.sa>0&&<div style={S.hsT}>🏆{hs.sa}</div>}</button>
+      <button style={S.mB} onClick={()=>startGame('time_trial')}><span style={{fontSize:28}}>⏱️</span><div><div style={{fontSize:15,fontWeight:700,color:'#f97316'}}>タイムトライアル</div><div style={{fontSize:11,color:'#78716c'}}>10VP最速到達</div></div>{hs.tt<999&&<div style={S.hsT}>🏆{hs.tt}T</div>}</button>
     </div>
     <div style={{display:'flex',gap:16,marginTop:12}}>{[OW.P,OW.N1,OW.N2].map(o=><span key={o} style={{color:OCOL[o].m,fontSize:13}}>{OCOL[o].emoji} {OCOL[o].name}</span>)}</div>
   </div></div>;
@@ -527,9 +528,9 @@ export default function SoloCatan(){
     <div style={{fontSize:56}}>{w==='player'?'🎉':'😢'}</div>
     <h1 style={S.h1}>{w==='player'?'勝利！':'敗北…'}</h1>
     <div style={S.goS}>{[{o:'player',vp:pv},{o:'npc1',vp:n1},{o:'npc2',vp:n2}].sort((a,b)=>b.vp-a.vp).map(({o,vp},i)=>
-      <div key={o} style={{display:'flex',justifyContent:'space-between',padding:'8px 12px',borderLeft:`4px solid ${OCOL[o].m}`,background:o===w?'rgba(255,215,0,.06)':'transparent',borderRadius:4}}>
+      <div key={o} style={{display:'flex',justifyContent:'space-between',padding:'8px 12px',borderLeft:`4px solid ${OCOL[o].m}`,background:o===w?'rgba(245,158,11,.06)':'transparent',borderRadius:4}}>
         <span style={{color:OCOL[o].m,fontWeight:700}}>{i===0?'👑 ':''}{OCOL[o].name}</span><span style={{color:OCOL[o].m,fontWeight:900,fontSize:20}}>{vp}VP</span></div>)}
-      <div style={{display:'flex',justifyContent:'space-between',padding:'6px 12px',color:'#8bc4f0'}}><span>ターン</span><span style={{color:'#ffd700'}}>{turn}</span></div>
+      <div style={{display:'flex',justifyContent:'space-between',padding:'6px 12px',color:'#78716c'}}><span>ターン</span><span style={{color:'#f59e0b'}}>{turn}</span></div>
     </div>
     <div style={{display:'flex',gap:10,marginTop:14}}>
       <button style={S.gB} onClick={()=>startGame(mode)}>もう一度</button>
@@ -540,12 +541,12 @@ export default function SoloCatan(){
   // ══════════ MAIN GAME ══════════
   return <div style={{...S.ctn, ...(isPC ? {maxWidth:'100vw'} : {})}}>
     <div style={S.hdr}>
-      <span style={{fontSize:12,color:'#8bc4f0'}}>{mode==='score_attack'?'🎯':'⏱️'} T{turn}{mode==='score_attack'?'/15':''}</span>
-      <span style={{fontSize:10,color:'#6a8aaa'}}>🏆{mode==='score_attack'?hs.sa:hs.tt<999?hs.tt+'T':'-'}</span>
+      <span style={{fontSize:12,color:'#78716c'}}>{mode==='score_attack'?'🎯':'⏱️'} T{turn}{mode==='score_attack'?'/15':''}</span>
+      <span style={{fontSize:10,color:'#a8a29e'}}>🏆{mode==='score_attack'?hs.sa:hs.tt<999?hs.tt+'T':'-'}</span>
     </div>
 
     {hint&&<div style={S.hint}>{hint}</div>}
-    {npcMsg&&<div key={npcMsg.msg+turn+String(Math.random()).slice(2,6)} style={{...S.npcT,borderColor:OCOL[npcMsg.ow].m,background:`linear-gradient(135deg,${OCOL[npcMsg.ow].bg},rgba(0,0,0,.85))`}}><span style={{color:OCOL[npcMsg.ow].m}}>{OCOL[npcMsg.ow].emoji} {npcMsg.msg}</span></div>}
+    {npcMsg&&<div key={npcMsg.msg+turn+String(Math.random()).slice(2,6)} style={{...S.npcT,borderColor:OCOL[npcMsg.ow].m}}><span style={{color:OCOL[npcMsg.ow].m}}>{OCOL[npcMsg.ow].emoji} {npcMsg.msg}</span></div>}
 
     <div style={isPC ? {display:'flex', flexDirection:'row', flex:1, overflow:'hidden'} : {display:'flex', flexDirection:'column', flex:1}}>
       {/* Board column */}
@@ -554,16 +555,16 @@ export default function SoloCatan(){
           <defs>
             <filter id="hs"><feDropShadow dx="1" dy="2" stdDeviation="1.5" floodOpacity=".3"/></filter>
             <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-            <radialGradient id="ocean" cx="50%" cy="45%"><stop offset="20%" stopColor="#1a6090"/><stop offset="60%" stopColor="#0e3a5e"/><stop offset="100%" stopColor="#061e35"/></radialGradient>
+            <radialGradient id="ocean" cx="50%" cy="45%"><stop offset="0%" stopColor="#bae6fd"/><stop offset="50%" stopColor="#93c5fd"/><stop offset="100%" stopColor="#dbeafe"/></radialGradient>
             {Object.entries(TCOL).map(([t,cs])=><radialGradient key={t} id={`tg_${t}`} cx="40%" cy="30%"><stop offset="0%" stopColor={cs[2]}/><stop offset="55%" stopColor={cs[1]}/><stop offset="100%" stopColor={cs[0]}/></radialGradient>)}
           </defs>
           <rect width={svgW} height={svgH} fill="url(#ocean)"/>
-          {[0,1,2,3,4].map(i=><ellipse key={i} cx={svgW/2} cy={svgH/2} rx={100+i*28} ry={80+i*22} fill="none" stroke="rgba(80,160,220,.08)" strokeWidth="1.5" style={{animation:`waveBob ${2+i*.3}s ease-in-out ${i*.2}s infinite`}}/>)}
+          {[0,1,2,3,4].map(i=><ellipse key={i} cx={svgW/2} cy={svgH/2} rx={100+i*28} ry={80+i*22} fill="none" stroke="rgba(255,255,255,.4)" strokeWidth="1.5" style={{animation:`waveBob ${2+i*.3}s ease-in-out ${i*.2}s infinite`}}/>)}
           <g transform={`translate(${ox},${oy})`}>
-            {coast&&<g><polygon points={coast.shore} fill="rgba(30,100,160,.3)" stroke="rgba(80,180,255,.15)" strokeWidth="1"/><polygon points={coast.beach} fill="#c8a96a" stroke="#a08040" strokeWidth="1" opacity=".7"/></g>}
+            {coast&&<g><polygon points={coast.shore} fill="rgba(147,197,253,.4)" stroke="rgba(96,165,250,.3)" strokeWidth="1"/><polygon points={coast.beach} fill="#f5deb3" stroke="#d4a855" strokeWidth="1" opacity=".7"/></g>}
             {B&&[...B.tiles].sort((a,b)=>a.cy-b.cy).map(t=><Hex3D key={t.id} t={t} showR={showRobber} robId={B.robId} onClick={hTC} glow={glowTiles.has(t.id)}/>)}
             {B?.ports?.map((pe,i)=>{const e=B.E[pe.eid];if(!e)return null;const v1=B.V[e.vs[0]],v2=B.V[e.vs[1]];const mx=(v1.x+v2.x)/2,my=(v1.y+v2.y)/2;const d=Math.sqrt(mx*mx+my*my)||1;const px=mx+(mx/d)*12,py=my+(my/d)*12;const lb=pe.type==='3:1'?'3:1':'2:1';const re=pe.type!=='3:1'?REMJ[pe.type]:'⚓';
-              return <g key={i}><line x1={mx} y1={my} x2={px} y2={py} stroke="#8B6914" strokeWidth="3" strokeLinecap="round"/><rect x={px-4} y={py-3} width="8" height="6" rx="1" fill="#6b4c2a" stroke="#4a3018" strokeWidth=".6"/><text x={px} y={py+11} textAnchor="middle" fontSize="6" fill="#ffd700" fontWeight="bold" style={{pointerEvents:'none'}}>{lb}</text><text x={px} y={py+18} textAnchor="middle" fontSize="7" style={{pointerEvents:'none'}}>{re}</text></g>;})}
+              return <g key={i}><line x1={mx} y1={my} x2={px} y2={py} stroke="#8B6914" strokeWidth="3" strokeLinecap="round"/><rect x={px-4} y={py-3} width="8" height="6" rx="1" fill="#6b4c2a" stroke="#4a3018" strokeWidth=".6"/><text x={px} y={py+11} textAnchor="middle" fontSize="6" fill="#f59e0b" fontWeight="bold" style={{pointerEvents:'none'}}>{lb}</text><text x={px} y={py+18} textAnchor="middle" fontSize="7" style={{pointerEvents:'none'}}>{re}</text></g>;})}
             {B?.E.map(e=>{const v1=B.V[e.vs[0]],v2=B.V[e.vs[1]];
               if(e.o)return <Road key={`e${e.id}`} x1={v1.x} y1={v1.y} x2={v2.x} y2={v2.y} owner={e.o}/>;
               if(clickE&&!showRobber)return <line key={`e${e.id}`} x1={v1.x} y1={v1.y} x2={v2.x} y2={v2.y} stroke="transparent" strokeWidth="12" style={{cursor:'pointer'}} onClick={ev=>{ev.stopPropagation();hEC(e.id);}}/>;
@@ -572,7 +573,7 @@ export default function SoloCatan(){
               if(v.b==='city')return <CityB key={`v${v.id}`} x={v.x} y={v.y} owner={v.o}/>;
               if(v.b==='settlement')return <g key={`v${v.id}`} onClick={()=>v.o===OW.P&&phase==='build'&&hVC(v.id)} style={{cursor:v.o===OW.P&&phase==='build'?'pointer':'default'}}><Settlement x={v.x} y={v.y} owner={v.o}/></g>;
               if(clickV&&!showRobber){const can=phase==='init'||canAff(P?.resources||emR(),COST.settlement);if(!can)return null;
-                return <circle key={`v${v.id}`} cx={v.x} cy={v.y} r="6" fill="rgba(255,215,0,.2)" stroke="#ffd700" strokeWidth="1.5" strokeDasharray="3,2" style={{cursor:'pointer',animation:'pulse 1.2s infinite'}} onClick={()=>hVC(v.id)}/>;}
+                return <circle key={`v${v.id}`} cx={v.x} cy={v.y} r="6" fill="rgba(249,115,22,.15)" stroke="#f97316" strokeWidth="1.5" strokeDasharray="3,2" style={{cursor:'pointer',animation:'pulse 1.2s infinite'}} onClick={()=>hVC(v.id)}/>;}
               return null;})}
             {flyCards.map(card=>{
               const style={animationName:'flyCard',animationDuration:'1.1s',animationTimingFunction:'cubic-bezier(.2,.8,.3,1)',animationDelay:card.delay+'s',animationFillMode:'both','--sx':card.sx+'px','--sy':card.sy+'px','--rot':String(card.rot)};
@@ -587,7 +588,7 @@ export default function SoloCatan(){
       </div>
 
       {/* Right panel (PC only) */}
-      {isPC && <div style={{width:320, flexShrink:0, display:'flex', flexDirection:'column', gap:8, padding:'12px 16px', overflowY:'auto', maxHeight:'calc(100vh - 80px)', borderLeft:'1px solid rgba(100,180,255,.1)'}}>
+      {isPC && <div style={{width:320, flexShrink:0, background:'rgba(255,255,255,.7)', backdropFilter:'blur(12px)', borderLeft:'1px solid rgba(0,0,0,.06)', display:'flex', flexDirection:'column', gap:8, padding:'12px 14px', overflowY:'auto', maxHeight:'calc(100vh - 80px)'}}>
         {/* Player cards */}
         {[{ow:OW.P,vp:pVP,res:P?.resources||emR()},{ow:OW.N1,vp:n1VP,res:npcs.npc1?.resources||emR()},{ow:OW.N2,vp:n2VP,res:npcs.npc2?.resources||emR()}].map(({ow,vp,res})=>{
           const active=(phase==='build'||phase==='dice')&&!npcActive&&ow===OW.P||npcActive&&(ow===OW.N1||ow===OW.N2);
@@ -598,7 +599,7 @@ export default function SoloCatan(){
         <div style={{display:'flex',gap:5,justifyContent:'center',flexWrap:'wrap',padding:'4px 0'}}>
           {phase==='dice'&&!npcActive&&<button style={S.dB} onClick={rollDice} disabled={rolling}><span style={rolling?{display:'inline-block',animation:'diceShake .3s infinite'}:{}}>{rolling?'🎲🎲':dice?`🎲 ${dice[0]}+${dice[1]}`:'🎲 ダイスロール'}</span></button>}
         </div>
-        {dice&&<div style={S.dS}><span style={{fontSize:22,color:'#ffd700'}}>{'⚀⚁⚂⚃⚄⚅'[dice[0]-1]}</span><span style={{fontSize:22,color:'#ffd700'}}>{'⚀⚁⚂⚃⚄⚅'[dice[1]-1]}</span><span style={{fontSize:14,fontWeight:900,color:'#ffd700',marginLeft:4}}>{dice[0]+dice[1]}</span></div>}
+        {dice&&<div style={S.dS}><span style={{fontSize:22,color:'#f59e0b'}}>{'⚀⚁⚂⚃⚄⚅'[dice[0]-1]}</span><span style={{fontSize:22,color:'#f59e0b'}}>{'⚀⚁⚂⚃⚄⚅'[dice[1]-1]}</span><span style={{fontSize:14,fontWeight:900,color:'#f59e0b',marginLeft:4}}>{dice[0]+dice[1]}</span></div>}
 
         {/* Build panel (PC) */}
         {phase==='build'&&!npcActive&&<div>
@@ -612,24 +613,24 @@ export default function SoloCatan(){
               const afford=canAff(P?.resources||emR(),cost)&&rem>0;
               return <button key={i} onClick={onClick||undefined} style={{
                 display:'flex',flexDirection:'column',alignItems:'center',gap:1,
-                padding:'6px 6px 4px',borderRadius:10,border:afford?'1.5px solid rgba(255,215,0,.4)':'1px solid rgba(100,150,200,.1)',
-                background:afford?'rgba(255,215,0,.08)':'rgba(0,0,0,.2)',
+                padding:'6px 6px 4px',borderRadius:10,border:afford?'1.5px solid rgba(249,115,22,.3)':'1px solid rgba(0,0,0,.07)',
+                background:afford?'rgba(249,115,22,.06)':'#ffffff',
                 cursor:onClick&&afford?'pointer':'default',opacity:afford?1:.4,
-                minWidth:60,transition:'all .15s',fontFamily:'inherit',color:'#e0eef8',
+                minWidth:60,transition:'all .15s',fontFamily:'inherit',color:'#1c1917',
               }}>
                 <span style={{fontSize:16}}>{icon}</span>
-                <span style={{fontSize:9,fontWeight:700,color:afford?'#ffd700':'#4a6a80'}}>{name}</span>
+                <span style={{fontSize:9,fontWeight:700,color:afford?'#f97316':'#a8a29e'}}>{name}</span>
                 <div style={{display:'flex',gap:2,flexWrap:'wrap',justifyContent:'center'}}>
                   {costShow.map(([emoji,n],j)=>{
                     const resKey=RK.find(k=>REMJ[k]===emoji);
                     const have=resKey?(P?.resources[resKey]||0):0;
                     const enough=have>=n;
-                    return <span key={j} style={{fontSize:8,opacity:enough?1:.5,background:enough?'rgba(255,255,255,.08)':'rgba(255,0,0,.1)',borderRadius:3,padding:'1px 2px'}}>
+                    return <span key={j} style={{fontSize:8,opacity:enough?1:.5,background:enough?'rgba(0,0,0,.04)':'rgba(239,68,68,.08)',borderRadius:3,padding:'1px 2px'}}>
                       {emoji}{n}
                     </span>;
                   })}
                 </div>
-                <span style={{fontSize:7,color:'#6a8aaa'}}>残{rem}</span>
+                <span style={{fontSize:7,color:'#a8a29e'}}>残{rem}</span>
               </button>;
             })}
           </div>
@@ -641,7 +642,7 @@ export default function SoloCatan(){
         </div>}
 
         {/* Log */}
-        <div style={{maxHeight:120,overflowY:'auto',padding:'4px 0'}}>{log.slice(0,8).map((m,i)=><div key={i} style={{fontSize:10,color:'#8bb8d8',opacity:1-i*.1,padding:'1px 0'}}>{m}</div>)}</div>
+        <div style={{maxHeight:120,overflowY:'auto',padding:'4px 0'}}>{log.slice(0,8).map((m,i)=><div key={i} style={{fontSize:10,color:'#78716c',opacity:1-i*.1,padding:'1px 0'}}>{m}</div>)}</div>
       </div>}
     </div>
 
@@ -653,10 +654,10 @@ export default function SoloCatan(){
       </div>
 
       {/* NPC dice display */}
-      {dice&&npcActive&&<div style={S.dS}><span style={{fontSize:22,color:'#ffd700'}}>{'⚀⚁⚂⚃⚄⚅'[dice[0]-1]}</span><span style={{fontSize:22,color:'#ffd700'}}>{'⚀⚁⚂⚃⚄⚅'[dice[1]-1]}</span><span style={{fontSize:14,fontWeight:900,color:'#ffd700',marginLeft:4}}>{dice[0]+dice[1]}</span></div>}
+      {dice&&npcActive&&<div style={S.dS}><span style={{fontSize:22,color:'#f59e0b'}}>{'⚀⚁⚂⚃⚄⚅'[dice[0]-1]}</span><span style={{fontSize:22,color:'#f59e0b'}}>{'⚀⚁⚂⚃⚄⚅'[dice[1]-1]}</span><span style={{fontSize:14,fontWeight:900,color:'#f59e0b',marginLeft:4}}>{dice[0]+dice[1]}</span></div>}
 
       {/* Player dice result */}
-      {dice&&phase!=='dice'&&!npcActive&&<div style={S.dS}><span style={{fontSize:22,color:'#ffd700'}}>{'⚀⚁⚂⚃⚄⚅'[dice[0]-1]}</span><span style={{fontSize:22,color:'#ffd700'}}>{'⚀⚁⚂⚃⚄⚅'[dice[1]-1]}</span><span style={{fontSize:14,fontWeight:900,color:'#ffd700',marginLeft:4}}>{dice[0]+dice[1]}</span></div>}
+      {dice&&phase!=='dice'&&!npcActive&&<div style={S.dS}><span style={{fontSize:22,color:'#f59e0b'}}>{'⚀⚁⚂⚃⚄⚅'[dice[0]-1]}</span><span style={{fontSize:22,color:'#f59e0b'}}>{'⚀⚁⚂⚃⚄⚅'[dice[1]-1]}</span><span style={{fontSize:14,fontWeight:900,color:'#f59e0b',marginLeft:4}}>{dice[0]+dice[1]}</span></div>}
 
       {/* ACTION PANEL - v5 redesign */}
       {phase==='build'&&!npcActive&&<div style={{padding:'4px 8px 2px'}}>
@@ -674,21 +675,21 @@ export default function SoloCatan(){
               padding:'6px 6px 4px',borderRadius:10,border:afford?'1.5px solid rgba(255,215,0,.4)':'1px solid rgba(100,150,200,.1)',
               background:afford?'rgba(255,215,0,.08)':'rgba(0,0,0,.2)',
               cursor:onClick&&afford?'pointer':'default',opacity:afford?1:.4,
-              minWidth:60,transition:'all .15s',fontFamily:'inherit',color:'#e0eef8',
+              minWidth:60,transition:'all .15s',fontFamily:'inherit',color:'#1c1917',
             }}>
               <span style={{fontSize:16}}>{icon}</span>
-              <span style={{fontSize:9,fontWeight:700,color:afford?'#ffd700':'#4a6a80'}}>{name}</span>
+              <span style={{fontSize:9,fontWeight:700,color:afford?'#f97316':'#a8a29e'}}>{name}</span>
               <div style={{display:'flex',gap:2,flexWrap:'wrap',justifyContent:'center'}}>
                 {costShow.map(([emoji,n],j)=>{
                   const resKey=RK.find(k=>REMJ[k]===emoji);
                   const have=resKey?(P?.resources[resKey]||0):0;
                   const enough=have>=n;
-                  return <span key={j} style={{fontSize:8,opacity:enough?1:.5,background:enough?'rgba(255,255,255,.08)':'rgba(255,0,0,.1)',borderRadius:3,padding:'1px 2px'}}>
+                  return <span key={j} style={{fontSize:8,opacity:enough?1:.5,background:enough?'rgba(0,0,0,.04)':'rgba(239,68,68,.08)',borderRadius:3,padding:'1px 2px'}}>
                     {emoji}{n}
                   </span>;
                 })}
               </div>
-              <span style={{fontSize:7,color:'#6a8aaa'}}>残{rem}</span>
+              <span style={{fontSize:7,color:'#a8a29e'}}>残{rem}</span>
             </button>;
           })}
         </div>
@@ -700,14 +701,14 @@ export default function SoloCatan(){
         </div>
       </div>}
 
-      <div style={{padding:'2px 12px 8px',maxHeight:55,overflow:'hidden'}}>{log.slice(0,3).map((m,i)=><div key={i} style={{fontSize:10,color:'#8bb8d8',opacity:1-i*.3,padding:'1px 0'}}>{m}</div>)}</div>
+      <div style={{padding:'2px 12px 8px',maxHeight:55,overflow:'hidden'}}>{log.slice(0,3).map((m,i)=><div key={i} style={{fontSize:10,color:'#78716c',opacity:1-i*.3,padding:'1px 0'}}>{m}</div>)}</div>
     </>}
 
     {/* Trade modal and robber hint (shared) */}
     {showTrade&&<div style={S.modal} onClick={()=>setShowTrade(false)}><div style={S.mBox} onClick={e=>e.stopPropagation()}>
-      <h3 style={{textAlign:'center',color:'#ffd700',margin:'0 0 12px',fontSize:16}}>🔄 港交換</h3>
-      <div style={{marginBottom:10}}><div style={{fontSize:11,color:'#8bc4f0',marginBottom:4}}>渡す</div><div style={{display:'flex',gap:3,justifyContent:'center'}}>{RK.map(r=>{const rate=getRate(r);const ok=(P?.resources[r]||0)>=rate;return <button key={r} style={{...S.trR,...(tGive===r?S.trS:{}),opacity:ok?1:.3}} onClick={()=>ok&&setTGive(r)}><span style={{fontSize:16}}>{REMJ[r]}</span><span style={{fontSize:10}}>×{rate}</span></button>;})}</div></div>
-      <div style={{marginBottom:10}}><div style={{fontSize:11,color:'#8bc4f0',marginBottom:4}}>もらう</div><div style={{display:'flex',gap:3,justifyContent:'center'}}>{RK.map(r=><button key={r} style={{...S.trR,...(tGet===r?S.trS:{}),opacity:tGive!==r?1:.2}} onClick={()=>tGive!==r&&setTGet(r)}><span style={{fontSize:16}}>{REMJ[r]}</span><span style={{fontSize:10}}>×1</span></button>)}</div></div>
+      <h3 style={{textAlign:'center',color:'#1c1917',margin:'0 0 12px',fontSize:16}}>🔄 港交換</h3>
+      <div style={{marginBottom:10}}><div style={{fontSize:11,color:'#78716c',marginBottom:4}}>渡す</div><div style={{display:'flex',gap:3,justifyContent:'center'}}>{RK.map(r=>{const rate=getRate(r);const ok=(P?.resources[r]||0)>=rate;return <button key={r} style={{...S.trR,...(tGive===r?S.trS:{}),opacity:ok?1:.3}} onClick={()=>ok&&setTGive(r)}><span style={{fontSize:16}}>{REMJ[r]}</span><span style={{fontSize:10}}>×{rate}</span></button>;})}</div></div>
+      <div style={{marginBottom:10}}><div style={{fontSize:11,color:'#78716c',marginBottom:4}}>もらう</div><div style={{display:'flex',gap:3,justifyContent:'center'}}>{RK.map(r=><button key={r} style={{...S.trR,...(tGet===r?S.trS:{}),opacity:tGive!==r?1:.2}} onClick={()=>tGive!==r&&setTGet(r)}><span style={{fontSize:16}}>{REMJ[r]}</span><span style={{fontSize:10}}>×1</span></button>)}</div></div>
       <div style={{display:'flex',gap:8}}><button style={{...S.gB,flex:1,opacity:tGive&&tGet&&tGive!==tGet?1:.35}} onClick={doTrade} disabled={!tGive||!tGet||tGive===tGet}>交換</button><button style={S.sB} onClick={()=>setShowTrade(false)}>閉じる</button></div>
     </div></div>}
 
@@ -716,30 +717,30 @@ export default function SoloCatan(){
 }
 
 const S={
-  ctn:{width:'100%',maxWidth:540,margin:'0 auto',minHeight:'100vh',background:'linear-gradient(180deg,#061e35,#0e3a5e 50%,#082840)',fontFamily:"'Noto Sans JP','Cinzel',sans-serif",color:'#e0eef8',display:'flex',flexDirection:'column',overflow:'hidden',position:'relative'},
+  ctn:{width:'100%',maxWidth:540,margin:'0 auto',minHeight:'100vh',background:'linear-gradient(160deg,#fdf6ec 0%,#fef3c7 40%,#e0f2fe 100%)',fontFamily:"'DM Sans','Noto Sans JP',sans-serif",color:'#1c1917',display:'flex',flexDirection:'column',overflow:'hidden',position:'relative'},
   tW:{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:20,gap:18},
-  h1:{fontSize:32,fontWeight:900,color:'#ffd700',textShadow:'0 0 20px rgba(255,215,0,.3),0 2px 8px rgba(0,0,0,.5)',margin:0,letterSpacing:5,fontFamily:"'Cinzel',serif"},
+  h1:{fontSize:36,fontWeight:900,color:'#1c1917',letterSpacing:2,fontFamily:"'Playfair Display','Noto Serif JP',serif",margin:0},
   tBs:{display:'flex',flexDirection:'column',gap:10,width:'100%',maxWidth:320},
-  mB:{display:'flex',alignItems:'center',gap:12,padding:'14px 16px',background:'linear-gradient(135deg,rgba(255,255,255,.07),rgba(255,255,255,.02))',border:'1px solid rgba(255,215,0,.25)',borderRadius:12,cursor:'pointer',color:'#e0eef8',textAlign:'left',position:'relative',boxShadow:'0 3px 12px rgba(0,0,0,.3)'},
-  hsT:{position:'absolute',top:8,right:12,fontSize:11,color:'#ffd700',background:'rgba(255,215,0,.1)',padding:'2px 8px',borderRadius:8},
-  hdr:{display:'flex',justifyContent:'space-between',padding:'6px 12px',background:'rgba(0,0,0,.3)',borderBottom:'1px solid rgba(100,180,255,.1)'},
-  hint:{textAlign:'center',padding:'5px 0',fontSize:12,fontWeight:700,color:'#ffd700',background:'rgba(255,215,0,.08)',animation:'pulse 1.5s infinite'},
-  npcT:{position:'absolute',top:42,left:'50%',transform:'translateX(-50%)',padding:'6px 14px',borderRadius:10,fontSize:13,fontWeight:600,zIndex:60,border:'1.5px solid',backdropFilter:'blur(6px)',animation:'npcSlide 1.2s ease-out forwards',whiteSpace:'nowrap',boxShadow:'0 4px 16px rgba(0,0,0,.5)'},
+  mB:{display:'flex',alignItems:'center',gap:14,padding:'16px 20px',background:'#ffffff',border:'1.5px solid rgba(0,0,0,.08)',borderRadius:16,cursor:'pointer',color:'#1c1917',textAlign:'left',position:'relative',boxShadow:'0 2px 12px rgba(0,0,0,.06)',transition:'all .2s'},
+  hsT:{position:'absolute',top:8,right:12,fontSize:11,color:'#f59e0b',background:'rgba(245,158,11,.08)',padding:'2px 8px',borderRadius:8,fontWeight:700},
+  hdr:{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'10px 16px',background:'rgba(255,255,255,.85)',backdropFilter:'blur(12px)',borderBottom:'1px solid rgba(0,0,0,.06)',boxShadow:'0 1px 8px rgba(0,0,0,.04)'},
+  hint:{textAlign:'center',padding:'6px 0',fontSize:12,fontWeight:700,color:'#f97316',background:'rgba(249,115,22,.06)',animation:'pulse 1.5s infinite'},
+  npcT:{position:'absolute',top:42,left:'50%',transform:'translateX(-50%)',padding:'6px 14px',borderRadius:10,fontSize:13,fontWeight:600,zIndex:60,border:'1.5px solid',background:'#ffffff',backdropFilter:'blur(6px)',animation:'npcSlide 1.2s ease-out forwards',whiteSpace:'nowrap',boxShadow:'0 4px 20px rgba(0,0,0,.12)'},
   bW:{flex:1,display:'flex',justifyContent:'center',alignItems:'center',minHeight:300},
   aR:{display:'flex',gap:5,padding:'4px 10px',justifyContent:'center',flexWrap:'wrap'},
   aB:{padding:'7px 12px',borderRadius:10,border:'none',cursor:'pointer',fontSize:12,fontWeight:700,fontFamily:'inherit'},
-  aBOn:{background:'rgba(255,255,255,.08)',color:'#ffd700',border:'1px solid rgba(255,215,0,.3)'},
-  aBOff:{background:'rgba(0,0,0,.2)',color:'#4a6a80',border:'1px solid rgba(100,150,200,.1)',cursor:'default'},
-  dB:{padding:'9px 22px',borderRadius:10,border:'none',cursor:'pointer',fontSize:15,fontWeight:800,fontFamily:'inherit',background:'linear-gradient(135deg,#b8860b,#daa520,#ffd700)',color:'#2a1500',boxShadow:'0 3px 14px rgba(218,165,32,.4)'},
-  eB:{background:'rgba(255,215,0,.12)',color:'#ffd700',border:'1.5px solid rgba(255,215,0,.35)'},
-  bR:{display:'flex',justifyContent:'center',gap:12,padding:'2px 10px',color:'#8bc4f0'},
+  aBOn:{background:'#ffffff',color:'#1c1917',border:'1.5px solid rgba(0,0,0,.1)',boxShadow:'0 2px 6px rgba(0,0,0,.06)'},
+  aBOff:{background:'rgba(0,0,0,.03)',color:'#a8a29e',border:'1.5px solid rgba(0,0,0,.05)',cursor:'default'},
+  dB:{padding:'12px 28px',borderRadius:14,border:'none',cursor:'pointer',fontSize:15,fontWeight:800,fontFamily:'inherit',background:'linear-gradient(135deg,#f97316,#f59e0b)',color:'#fff',boxShadow:'0 4px 16px rgba(249,115,22,.35)',transition:'all .2s'},
+  eB:{background:'#0d9488',color:'#fff',border:'none',boxShadow:'0 2px 8px rgba(13,148,136,.3)'},
+  bR:{display:'flex',justifyContent:'center',gap:12,padding:'4px 10px',color:'#78716c'},
   dS:{display:'flex',justifyContent:'center',alignItems:'center',gap:6,padding:'2px 0'},
-  modal:{position:'fixed',inset:0,background:'rgba(0,8,16,.85)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:100},
-  mBox:{background:'linear-gradient(150deg,#1a3a50,#0e2a40)',border:'2px solid rgba(255,215,0,.25)',borderRadius:16,padding:18,maxWidth:340,width:'90%'},
-  trR:{display:'flex',flexDirection:'column',alignItems:'center',gap:2,padding:'6px 5px',background:'rgba(255,255,255,.03)',border:'1px solid rgba(100,150,200,.12)',borderRadius:8,cursor:'pointer',color:'#e0eef8',minWidth:48},
-  trS:{background:'rgba(255,215,0,.1)',border:'2px solid #ffd700'},
-  gB:{padding:'10px 20px',background:'linear-gradient(135deg,#b8860b,#daa520)',color:'#fff',border:'none',borderRadius:10,cursor:'pointer',fontSize:14,fontWeight:700,fontFamily:'inherit'},
-  sB:{padding:'10px 14px',background:'rgba(255,255,255,.04)',color:'#8bc4f0',border:'1px solid rgba(100,180,255,.15)',borderRadius:10,cursor:'pointer',fontSize:13,fontFamily:'inherit'},
-  rB:{position:'absolute',top:68,left:'50%',transform:'translateX(-50%)',background:'rgba(0,0,0,.85)',color:'#ffd700',padding:'7px 14px',borderRadius:10,fontSize:13,fontWeight:700,zIndex:50,border:'1px solid rgba(255,215,0,.3)',whiteSpace:'nowrap'},
-  goS:{width:'100%',maxWidth:280,display:'flex',flexDirection:'column',gap:5,background:'rgba(0,0,0,.2)',borderRadius:12,padding:14},
+  modal:{position:'fixed',inset:0,background:'rgba(28,25,23,.5)',backdropFilter:'blur(4px)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:100},
+  mBox:{background:'#ffffff',border:'1.5px solid rgba(0,0,0,.06)',borderRadius:20,padding:22,maxWidth:340,width:'90%',boxShadow:'0 20px 60px rgba(0,0,0,.15)'},
+  trR:{display:'flex',flexDirection:'column',alignItems:'center',gap:2,padding:'6px 5px',background:'rgba(0,0,0,.02)',border:'1.5px solid rgba(0,0,0,.08)',borderRadius:8,cursor:'pointer',color:'#1c1917',minWidth:48},
+  trS:{background:'rgba(249,115,22,.08)',border:'2px solid #f97316'},
+  gB:{padding:'10px 20px',background:'linear-gradient(135deg,#f97316,#f59e0b)',color:'#fff',border:'none',borderRadius:12,cursor:'pointer',fontSize:14,fontWeight:700,fontFamily:'inherit',boxShadow:'0 2px 8px rgba(249,115,22,.3)'},
+  sB:{padding:'10px 14px',background:'rgba(0,0,0,.03)',color:'#78716c',border:'1.5px solid rgba(0,0,0,.08)',borderRadius:12,cursor:'pointer',fontSize:13,fontFamily:'inherit'},
+  rB:{position:'absolute',top:68,left:'50%',transform:'translateX(-50%)',background:'#ffffff',color:'#f97316',padding:'7px 14px',borderRadius:10,fontSize:13,fontWeight:700,zIndex:50,border:'1.5px solid rgba(249,115,22,.3)',whiteSpace:'nowrap',boxShadow:'0 4px 16px rgba(0,0,0,.1)'},
+  goS:{width:'100%',maxWidth:300,display:'flex',flexDirection:'column',gap:6,background:'#ffffff',borderRadius:16,padding:16,boxShadow:'0 4px 20px rgba(0,0,0,.08)'},
 };
