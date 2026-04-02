@@ -209,6 +209,7 @@ export default function SoloCatan(){
   // v5: BUG-3 - track special card owners
   const [armyOwner,setArmyOwner]=useState(null);
   const [roadOwner,setRoadOwner]=useState(null);
+  const [selectedAction,setSelectedAction]=useState(null);
 
   const isPC = useIsPC();
 
@@ -295,7 +296,7 @@ export default function SoloCatan(){
     setP({resources:emR(),sL:5,cL:4,rL:15,devCards:[],kP:0});
     setNpcs({npc1:{resources:emR(),sL:3,cL:4,rL:13,devCards:[],kP:0},npc2:{resources:emR(),sL:3,cL:4,rL:13,devCards:[],kP:0}});
     setDice(null);setDevDk(shuf(DEVDECK));setLog(['🎮 開拓地①を配置してください']);
-    setScreen('playing');setShowTrade(false);setShowRobber(false);setNpcActive(false);setNpcMsg(null);setFlyCards([]);setGlowTiles(new Set());setArmyOwner(null);setRoadOwner(null);
+    setScreen('playing');setShowTrade(false);setShowRobber(false);setNpcActive(false);setNpcMsg(null);setFlyCards([]);setGlowTiles(new Set());setArmyOwner(null);setRoadOwner(null);setSelectedAction(null);
   },[]);
 
   // v5: BUG-2 - NPC auto-placement during init phase
@@ -339,8 +340,8 @@ export default function SoloCatan(){
         }
       }
     } else if(phase==='build'){
-      if(v.b==='settlement'&&v.o===OW.P){if(!canAff(P.resources,COST.city)||P.cL<=0)return;const nb=JSON.parse(JSON.stringify(B));nb.V[vid].b='city';setB(nb);setP(p=>({...p,resources:sub(p.resources,COST.city),cL:p.cL-1,sL:p.sL+1}));addLog('🏰 都市化！');}
-      else if(!v.b){if(!canAff(P.resources,COST.settlement)||P.sL<=0)return;if(!v.ae.some(eid=>B.E[eid].o===OW.P)){addLog('⚠️ 道路に繋げて');return;}if(v.av.some(a=>B.V[a].b)){addLog('⚠️ 近すぎます');return;}const nb=JSON.parse(JSON.stringify(B));nb.V[vid].b='settlement';nb.V[vid].o=OW.P;setB(nb);setP(p=>({...p,resources:sub(p.resources,COST.settlement),sL:p.sL-1}));addLog('🏠 開拓地！');}
+      if(v.b==='settlement'&&v.o===OW.P){if(!canAff(P.resources,COST.city)||P.cL<=0)return;const nb=JSON.parse(JSON.stringify(B));nb.V[vid].b='city';setB(nb);setP(p=>({...p,resources:sub(p.resources,COST.city),cL:p.cL-1,sL:p.sL+1}));addLog('🏰 都市化！');setSelectedAction(null);}
+      else if(!v.b){if(!canAff(P.resources,COST.settlement)||P.sL<=0)return;if(!v.ae.some(eid=>B.E[eid].o===OW.P)){addLog('⚠️ 道路に繋げて');return;}if(v.av.some(a=>B.V[a].b)){addLog('⚠️ 近すぎます');return;}const nb=JSON.parse(JSON.stringify(B));nb.V[vid].b='settlement';nb.V[vid].o=OW.P;setB(nb);setP(p=>({...p,resources:sub(p.resources,COST.settlement),sL:p.sL-1}));addLog('🏠 開拓地！');setSelectedAction(null);}
     }
   },[B,phase,pSt,P,npcActive,addLog]);
 
@@ -356,7 +357,7 @@ export default function SoloCatan(){
       if(!canAff(P.resources,COST.road)||P.rL<=0)return;
       const con=e.vs.some(vid=>{const v=B.V[vid];if(v.b&&v.o===OW.P)return true;return v.ae.some(ae=>ae!==eid&&B.E[ae].o===OW.P);});
       if(!con){addLog('⚠️ 繋がっていません');return;}
-      const nb=JSON.parse(JSON.stringify(B));nb.E[eid].o=OW.P;setB(nb);setP(p=>({...p,resources:sub(p.resources,COST.road),rL:p.rL-1}));addLog('🛤️ 道路建設');
+      const nb=JSON.parse(JSON.stringify(B));nb.E[eid].o=OW.P;setB(nb);setP(p=>({...p,resources:sub(p.resources,COST.road),rL:p.rL-1}));addLog('🛤️ 道路建設');setSelectedAction(null);
     }
   },[B,phase,pSt,P,npcActive,addLog]);
 
@@ -423,7 +424,7 @@ export default function SoloCatan(){
     if(n1>=10||n2>=10){setPhase('game_over');setScreen('gameover');addLog('🏁 AI勝利…');setNpcActive(false);return;}
     if(mode==='score_attack'&&newT>15){setPhase('game_over');setScreen('gameover');if(pv>hs.sa){const s={...hs,sa:pv};setHs(s);saveHs(s);}addLog('🏁 終了！');setNpcActive(false);return;}
     if(mode==='time_trial'&&pv>=10){setPhase('game_over');setScreen('gameover');if(turn<hs.tt){const s={...hs,tt:turn};setHs(s);saveHs(s);}addLog('🏁 10VP！');setNpcActive(false);return;}
-    setTurn(newT);setPhase('dice');setDice(null);addLog(`── ターン${newT} ──`);setNpcActive(false);
+    setTurn(newT);setPhase('dice');setDice(null);addLog(`── ターン${newT} ──`);setNpcActive(false);setSelectedAction(null);
   },[turn,mode,hs,P,calcVP,updateSpecials,saveHs,addLog]);
 
   // v5: ADD-1 - endTurn with NPC dice roll + resource collection + build
@@ -506,7 +507,7 @@ export default function SoloCatan(){
   // v5: BUG-2 - clickable vertices/edges updated for 8-step init
   const clickV=phase==='init'?(pSt===0||pSt===6):phase==='build';
   const clickE=phase==='init'?(pSt===1||pSt===7):phase==='build'&&canAff(P?.resources||emR(),COST.road)&&(P?.rL||0)>0;
-  const initHints=['🏠 開拓地①','🛤️ 道路①','🤖 赤が配置中…','🤖 青が配置中…','🤖 青が配置中…','🤖 赤が配置中…','🏠 開拓地②','🛤️ 道路②'];
+  const initHints=['🏠 ボード上の頂点をタップして開拓地①を配置','🛤️ 開拓地に隣接する辺をタップして道路①を配置','🤖 赤が配置中…','🤖 青が配置中…','🤖 青が配置中…','🤖 赤が配置中…','🏠 ボード上の頂点をタップして開拓地②を配置','🛤️ 開拓地に隣接する辺をタップして道路②を配置'];
   const hint=phase==='init'?initHints[pSt]||null:null;
   const hasK=P?.devCards.some(c=>c.type==='knight'&&!c.used);
 
@@ -561,6 +562,12 @@ export default function SoloCatan(){
     </div>
 
     {hint&&<div style={S.hint}>{hint}</div>}
+    {selectedAction&&phase==='build'&&!npcActive&&<div style={{textAlign:'center',padding:'6px 16px',fontSize:12,fontWeight:700,color:'#f97316',background:'rgba(249,115,22,.08)',borderBottom:'1px solid rgba(249,115,22,.15)',display:'flex',alignItems:'center',justifyContent:'center',gap:8,flexShrink:0}}>
+      {selectedAction==='road'&&'🛤️ ボード上の辺をタップして道路を配置'}
+      {selectedAction==='settlement'&&'🏠 ボード上の頂点をタップして開拓地を配置'}
+      {selectedAction==='city'&&'🏰 アップグレードしたい開拓地をタップ'}
+      <button onClick={()=>setSelectedAction(null)} style={{background:'none',border:'1px solid rgba(249,115,22,.3)',borderRadius:6,padding:'2px 8px',fontSize:11,color:'#f97316',cursor:'pointer',fontFamily:'inherit'}}>✕</button>
+    </div>}
     {npcMsg&&<div key={npcMsg.msg+turn+String(Math.random()).slice(2,6)} style={{...S.npcT,borderColor:OCOL[npcMsg.ow].m}}><span style={{color:OCOL[npcMsg.ow].m}}>{OCOL[npcMsg.ow].emoji} {npcMsg.msg}</span></div>}
 
     <div style={isPC ? {display:'flex', flex:1, overflow:'hidden', minHeight:0} : {display:'flex', flexDirection:'column', flex:1, minHeight:0}}>
@@ -584,12 +591,19 @@ export default function SoloCatan(){
               return <g key={i}><line x1={mx} y1={my} x2={px} y2={py} stroke="#8B6914" strokeWidth="3" strokeLinecap="round"/><rect x={px-4} y={py-3} width="8" height="6" rx="1" fill="#6b4c2a" stroke="#4a3018" strokeWidth=".6"/><text x={px} y={py+11} textAnchor="middle" fontSize="6" fill="#f59e0b" fontWeight="bold" style={{pointerEvents:'none'}}>{lb}</text><text x={px} y={py+18} textAnchor="middle" fontSize="7" style={{pointerEvents:'none'}}>{re}</text></g>;})}
             {B?.E.map(e=>{const v1=B.V[e.vs[0]],v2=B.V[e.vs[1]];
               if(e.o)return <Road key={`e${e.id}`} x1={v1.x} y1={v1.y} x2={v2.x} y2={v2.y} owner={e.o}/>;
-              if(clickE&&!showRobber)return <line key={`e${e.id}`} x1={v1.x} y1={v1.y} x2={v2.x} y2={v2.y} stroke="transparent" strokeWidth="12" style={{cursor:'pointer'}} onClick={ev=>{ev.stopPropagation();hEC(e.id);}}/>;
+              const canPlaceRoad=selectedAction==='road'&&phase==='build'&&!e.o&&e.vs.some(vid=>{const vv=B.V[vid];if(vv.b&&vv.o===OW.P)return true;return vv.ae.some(ae=>ae!==e.id&&B.E[ae].o===OW.P);});
+              if(canPlaceRoad)return <line key={`e${e.id}`} x1={v1.x} y1={v1.y} x2={v2.x} y2={v2.y} stroke="#f97316" strokeWidth="4" strokeLinecap="round" strokeDasharray="6,4" opacity=".7" style={{cursor:'pointer',animation:'pulse 1.5s infinite'}} onClick={ev=>{ev.stopPropagation();hEC(e.id);}}/>;
+              if(clickE&&!showRobber&&!selectedAction)return <line key={`e${e.id}`} x1={v1.x} y1={v1.y} x2={v2.x} y2={v2.y} stroke="transparent" strokeWidth="12" style={{cursor:'pointer'}} onClick={ev=>{ev.stopPropagation();hEC(e.id);}}/>;
               return null;})}
             {B?.V.map(v=>{
               if(v.b==='city')return <CityB key={`v${v.id}`} x={v.x} y={v.y} owner={v.o}/>;
-              if(v.b==='settlement')return <g key={`v${v.id}`} onClick={()=>v.o===OW.P&&phase==='build'&&hVC(v.id)} style={{cursor:v.o===OW.P&&phase==='build'?'pointer':'default'}}><Settlement x={v.x} y={v.y} owner={v.o}/></g>;
-              if(clickV&&!showRobber){const can=phase==='init'||canAff(P?.resources||emR(),COST.settlement);if(!can)return null;
+              if(v.b==='settlement'){
+                if(selectedAction==='city'&&v.o===OW.P&&phase==='build')return <g key={`v${v.id}`} onClick={()=>hVC(v.id)} style={{cursor:'pointer'}}><Settlement x={v.x} y={v.y} owner={v.o}/><circle cx={v.x} cy={v.y} r="12" fill="none" stroke="#f97316" strokeWidth="2" strokeDasharray="4,3" style={{animation:'pulse 1.2s infinite'}}/></g>;
+                return <g key={`v${v.id}`} onClick={()=>v.o===OW.P&&phase==='build'&&!selectedAction&&hVC(v.id)} style={{cursor:v.o===OW.P&&phase==='build'&&!selectedAction?'pointer':'default'}}><Settlement x={v.x} y={v.y} owner={v.o}/></g>;
+              }
+              const canPlaceSettle=selectedAction==='settlement'&&phase==='build'&&!v.b&&!v.av.some(a=>B.V[a].b)&&v.ae.some(eid=>B.E[eid].o===OW.P);
+              if(canPlaceSettle)return <g key={`v${v.id}`} onClick={()=>hVC(v.id)} style={{cursor:'pointer'}}><circle cx={v.x} cy={v.y} r="8" fill="rgba(249,115,22,.2)" stroke="#f97316" strokeWidth="2" strokeDasharray="4,3" style={{animation:'pulse 1.2s infinite'}}/><text x={v.x} y={v.y+1} textAnchor="middle" dominantBaseline="middle" fontSize="10" style={{pointerEvents:'none'}}>🏠</text></g>;
+              if(clickV&&!showRobber&&!selectedAction){const can=phase==='init'||canAff(P?.resources||emR(),COST.settlement);if(!can)return null;
                 return <circle key={`v${v.id}`} cx={v.x} cy={v.y} r="6" fill="rgba(249,115,22,.15)" stroke="#f97316" strokeWidth="1.5" strokeDasharray="3,2" style={{cursor:'pointer',animation:'pulse 1.2s infinite'}} onClick={()=>hVC(v.id)}/>;}
               return null;})}
             {flyCards.map(card=>{
@@ -623,21 +637,26 @@ export default function SoloCatan(){
         {phase==='build'&&!npcActive&&<div>
           <div style={{display:'flex',gap:4,justifyContent:'center',marginBottom:4,flexWrap:'wrap'}}>
             {[
-              {icon:'🛤️',name:'道路',cost:COST.road,rem:P?.rL||0,costShow:[['🪵',1],['🧱',1]]},
-              {icon:'🏠',name:'開拓地',cost:COST.settlement,rem:P?.sL||0,costShow:[['🪵',1],['🧱',1],['🐑',1],['🌾',1]]},
-              {icon:'🏰',name:'都市',cost:COST.city,rem:P?.cL||0,costShow:[['🌾',2],['⛏️',3]]},
-              {icon:'🃏',name:'発展',cost:COST.devcard,rem:devDk.length,costShow:[['🐑',1],['🌾',1],['⛏️',1]],onClick:buyDev},
-            ].map(({icon,name,cost,rem,costShow,onClick},i)=>{
+              {icon:'🛤️',name:'道路',act:'road',cost:COST.road,rem:P?.rL||0,costShow:[['🪵',1],['🧱',1]]},
+              {icon:'🏠',name:'開拓地',act:'settlement',cost:COST.settlement,rem:P?.sL||0,costShow:[['🪵',1],['🧱',1],['🐑',1],['🌾',1]]},
+              {icon:'🏰',name:'都市',act:'city',cost:COST.city,rem:P?.cL||0,costShow:[['🌾',2],['⛏️',3]]},
+              {icon:'🃏',name:'発展',act:null,cost:COST.devcard,rem:devDk.length,costShow:[['🐑',1],['🌾',1],['⛏️',1]],onClick:buyDev},
+            ].map(({icon,name,act,cost,rem,costShow,onClick},i)=>{
               const afford=canAff(P?.resources||emR(),cost)&&rem>0;
-              return <button key={i} onClick={onClick||undefined} style={{
+              const sel=act&&selectedAction===act;
+              const handleClick=onClick||(act&&afford?()=>setSelectedAction(prev=>prev===act?null:act):undefined);
+              return <button key={i} onClick={handleClick} style={{
                 display:'flex',flexDirection:'column',alignItems:'center',gap:1,
-                padding:'6px 6px 4px',borderRadius:10,border:afford?'1.5px solid rgba(249,115,22,.3)':'1px solid rgba(0,0,0,.07)',
-                background:afford?'rgba(249,115,22,.06)':'#ffffff',
-                cursor:onClick&&afford?'pointer':'default',opacity:afford?1:.4,
+                padding:'6px 6px 4px',borderRadius:10,
+                border:sel?'2px solid #f97316':afford?'1.5px solid rgba(249,115,22,.3)':'1px solid rgba(0,0,0,.07)',
+                background:sel?'rgba(249,115,22,.1)':afford?'rgba(249,115,22,.06)':'#ffffff',
+                boxShadow:sel?'0 0 12px rgba(249,115,22,.2)':'none',
+                transform:sel?'scale(1.05)':'none',
+                cursor:handleClick?'pointer':'default',opacity:afford?1:.4,
                 minWidth:60,transition:'all .15s',fontFamily:'inherit',color:'#1c1917',
               }}>
                 <span style={{fontSize:16}}>{icon}</span>
-                <span style={{fontSize:9,fontWeight:700,color:afford?'#f97316':'#a8a29e'}}>{name}</span>
+                <span style={{fontSize:9,fontWeight:700,color:sel||afford?'#f97316':'#a8a29e'}}>{name}</span>
                 <div style={{display:'flex',gap:2,flexWrap:'wrap',justifyContent:'center'}}>
                   {costShow.map(([emoji,n],j)=>{
                     const resKey=RK.find(k=>REMJ[k]===emoji);
@@ -682,21 +701,26 @@ export default function SoloCatan(){
         {/* Build action cards */}
         <div style={{display:'flex',gap:4,justifyContent:'center',marginBottom:4}}>
           {[
-            {icon:'🛤️',name:'道路',cost:COST.road,rem:P?.rL||0,costShow:[['🪵',1],['🧱',1]]},
-            {icon:'🏠',name:'開拓地',cost:COST.settlement,rem:P?.sL||0,costShow:[['🪵',1],['🧱',1],['🐑',1],['🌾',1]]},
-            {icon:'🏰',name:'都市',cost:COST.city,rem:P?.cL||0,costShow:[['🌾',2],['⛏️',3]]},
-            {icon:'🃏',name:'発展',cost:COST.devcard,rem:devDk.length,costShow:[['🐑',1],['🌾',1],['⛏️',1]],onClick:buyDev},
-          ].map(({icon,name,cost,rem,costShow,onClick},i)=>{
+            {icon:'🛤️',name:'道路',act:'road',cost:COST.road,rem:P?.rL||0,costShow:[['🪵',1],['🧱',1]]},
+            {icon:'🏠',name:'開拓地',act:'settlement',cost:COST.settlement,rem:P?.sL||0,costShow:[['🪵',1],['🧱',1],['🐑',1],['🌾',1]]},
+            {icon:'🏰',name:'都市',act:'city',cost:COST.city,rem:P?.cL||0,costShow:[['🌾',2],['⛏️',3]]},
+            {icon:'🃏',name:'発展',act:null,cost:COST.devcard,rem:devDk.length,costShow:[['🐑',1],['🌾',1],['⛏️',1]],onClick:buyDev},
+          ].map(({icon,name,act,cost,rem,costShow,onClick},i)=>{
             const afford=canAff(P?.resources||emR(),cost)&&rem>0;
-            return <button key={i} onClick={onClick||undefined} style={{
+            const sel=act&&selectedAction===act;
+            const handleClick=onClick||(act&&afford?()=>setSelectedAction(prev=>prev===act?null:act):undefined);
+            return <button key={i} onClick={handleClick} style={{
               display:'flex',flexDirection:'column',alignItems:'center',gap:1,
-              padding:'6px 6px 4px',borderRadius:10,border:afford?'1.5px solid rgba(255,215,0,.4)':'1px solid rgba(100,150,200,.1)',
-              background:afford?'rgba(255,215,0,.08)':'rgba(0,0,0,.2)',
-              cursor:onClick&&afford?'pointer':'default',opacity:afford?1:.4,
+              padding:'6px 6px 4px',borderRadius:10,
+              border:sel?'2px solid #f97316':afford?'1.5px solid rgba(249,115,22,.3)':'1px solid rgba(0,0,0,.07)',
+              background:sel?'rgba(249,115,22,.1)':afford?'rgba(249,115,22,.06)':'#ffffff',
+              boxShadow:sel?'0 0 12px rgba(249,115,22,.2)':'none',
+              transform:sel?'scale(1.05)':'none',
+              cursor:handleClick?'pointer':'default',opacity:afford?1:.4,
               minWidth:60,transition:'all .15s',fontFamily:'inherit',color:'#1c1917',
             }}>
               <span style={{fontSize:16}}>{icon}</span>
-              <span style={{fontSize:9,fontWeight:700,color:afford?'#f97316':'#a8a29e'}}>{name}</span>
+              <span style={{fontSize:9,fontWeight:700,color:sel||afford?'#f97316':'#a8a29e'}}>{name}</span>
               <div style={{display:'flex',gap:2,flexWrap:'wrap',justifyContent:'center'}}>
                 {costShow.map(([emoji,n],j)=>{
                   const resKey=RK.find(k=>REMJ[k]===emoji);
