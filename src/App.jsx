@@ -119,7 +119,7 @@ function Hex3D({t,showR,robId,onClick,glow}){
     <polygon points={top} fill={`url(#tg_${t.type})`} stroke="#2a1a0a" strokeWidth="1.5" opacity={t.rob&&t.type!=='desert'?.35:1}/>
     <polygon points={hC(t.cx,t.cy).map(c=>`${c.x*.92+t.cx*.08},${c.y*.92+t.cy*.08}`).join(' ')} fill="none" stroke="rgba(255,255,255,.1)" strokeWidth=".5"/>
     <TerrainDeco type={t.type} cx={t.cx} cy={t.cy}/>
-    {t.num>0&&!t.rob&&<g><circle cx={t.cx} cy={t.cy+6} r="10" fill="#fffbeb" stroke="#d97706" strokeWidth="1.5" filter="url(#hs)"/><text x={t.cx} y={t.cy+10} textAnchor="middle" fontSize="10" fontWeight="bold" fill={t.num===6||t.num===8?'#cc2200':'#1c1917'} style={{pointerEvents:'none'}}>{t.num}</text><text x={t.cx} y={t.cy+15} textAnchor="middle" fontSize="4.5" fill={t.num===6||t.num===8?'#cc2200':'#a8a29e'} style={{pointerEvents:'none'}}>{'•'.repeat(PIPS[t.num]||0)}</text></g>}
+    {t.num>0&&!t.rob&&<g><circle cx={t.cx} cy={t.cy+10} r="9" fill="#fffbeb" stroke="#d97706" strokeWidth="1.2" filter="url(#hs)"/><text x={t.cx} y={t.cy+13.5} textAnchor="middle" fontSize="10" fontWeight="bold" fill={t.num===6||t.num===8?'#dc2626':'#1c1917'} style={{pointerEvents:'none'}}>{t.num}</text><text x={t.cx} y={t.cy+19} textAnchor="middle" fontSize="4.5" fill={t.num===6||t.num===8?'#dc2626':'#a8a29e'} style={{pointerEvents:'none'}}>{'•'.repeat(PIPS[t.num]||0)}</text></g>}
     {t.rob&&t.type!=='desert'&&<text x={t.cx} y={t.cy+6} textAnchor="middle" fontSize="18" style={{pointerEvents:'none'}}>🦹</text>}
     {rc&&<polygon points={top} fill="rgba(249,115,22,.15)" stroke="#f97316" strokeWidth="2" strokeDasharray="4,2" style={{animation:'shimmer 1s infinite'}}/>}
     {glow&&<polygon points={top} fill="rgba(253,224,71,.4)" stroke="#f59e0b" strokeWidth="2" filter="url(#glow)" style={{animation:'tileGlow 1.4s ease-out forwards',pointerEvents:'none'}}/>}
@@ -127,17 +127,8 @@ function Hex3D({t,showR,robId,onClick,glow}){
 }
 function TerrainDeco({type, cx, cy}) {
   const icons = {forest:'🌲',hill:'🧱',pasture:'🐑',field:'🌾',mountain:'⛰️',desert:'🏜️'};
-  const subs = {
-    forest: [[-10,4,'🌲',8],[10,4,'🌲',8],[0,9,'🌲',8]],
-    pasture: [[-8,5,'🐑',7],[8,6,'🐑',7]],
-    field: [[-9,5,'🌾',7],[9,5,'🌾',7]],
-    mountain: [[-8,6,'⛏️',7]],
-    hill: [[-8,5,'🧱',7],[7,6,'🧱',7]],
-    desert: [[-6,6,'🌵',8]],
-  };
   return <g>
-    <text x={cx} y={cy-4} textAnchor="middle" fontSize="18" style={{pointerEvents:'none',filter:'drop-shadow(0 1px 2px rgba(0,0,0,.3))'}}>{icons[type]}</text>
-    {(subs[type]||[]).map(([dx,dy,icon,sz],i) => <text key={i} x={cx+dx} y={cy+dy} textAnchor="middle" fontSize={sz} opacity=".5" style={{pointerEvents:'none'}}>{icon}</text>)}
+    <text x={cx} y={cy-10} textAnchor="middle" fontSize="15" style={{pointerEvents:'none',filter:'drop-shadow(0 1px 1px rgba(0,0,0,.2))'}}>{icons[type]}</text>
   </g>;
 }
 function Settlement({x,y,owner}){const c=OCOL[owner];return <g transform={`translate(${x},${y})`} style={{animation:'popIn .4s ease-out'}}><polygon points="-6,2 -6,-2 0,-7 6,-2 6,2" fill={c.l} stroke={c.s} strokeWidth="1.2"/><rect x="-6" y="2" width="12" height="5" fill={c.l} stroke={c.s} strokeWidth="1"/><rect x="-2" y="3" width="4" height="4" fill={c.m} opacity=".4"/></g>;}
@@ -237,6 +228,7 @@ export default function SoloCatan(){
         85%{opacity:.9}
         100%{transform:translate(0,0) scale(.6) rotate(0deg);opacity:0}}
       @keyframes waveBob{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
+      button:hover{transform:translateY(-1px)} button:active{transform:translateY(0)}
     `;document.head.appendChild(sty);
     return ()=>{try{document.head.removeChild(link);document.head.removeChild(sty);}catch(e){}};
   },[]);
@@ -518,38 +510,53 @@ export default function SoloCatan(){
   const hasK=P?.devCards.some(c=>c.type==='knight'&&!c.used);
 
   // ══════════ TITLE ══════════
-  if(screen==='title')return <div style={S.ctn}><div style={S.tW}>
-    <div style={{fontSize:64}}>🏝️</div>
-    <h1 style={S.h1}>ソロカタン</h1>
-    <p style={{fontSize:13,color:'#78716c',letterSpacing:3}}>Island of Divine Settlers</p>
-    <div style={S.tBs}>
-      <button style={S.mB} onClick={()=>startGame('score_attack')}><span style={{fontSize:28}}>🎯</span><div><div style={{fontSize:15,fontWeight:700,color:'#f97316'}}>スコアアタック</div><div style={{fontSize:11,color:'#78716c'}}>15ターンVP最大化</div></div>{hs.sa>0&&<div style={S.hsT}>🏆{hs.sa}</div>}</button>
-      <button style={S.mB} onClick={()=>startGame('time_trial')}><span style={{fontSize:28}}>⏱️</span><div><div style={{fontSize:15,fontWeight:700,color:'#f97316'}}>タイムトライアル</div><div style={{fontSize:11,color:'#78716c'}}>10VP最速到達</div></div>{hs.tt<999&&<div style={S.hsT}>🏆{hs.tt}T</div>}</button>
+  if(screen==='title')return <div style={isPC ? S.ctnPC : S.ctn}>{isPC ? (
+    <div style={{display:'flex',minHeight:'100vh',alignItems:'center',justifyContent:'center',gap:80,padding:'0 60px'}}>
+      <div style={{textAlign:'center'}}>
+        <div style={{fontSize:100,marginBottom:16}}>🏝️</div>
+        <h1 style={{...S.h1,fontSize:52}}>ソロカタン</h1>
+        <p style={{color:'#78716c',letterSpacing:4,marginTop:8,fontSize:15}}>Island of Divine Settlers</p>
+        <div style={{display:'flex',gap:20,marginTop:20,justifyContent:'center'}}>{[OW.P,OW.N1,OW.N2].map(o=><span key={o} style={{color:OCOL[o].m,fontSize:14,fontWeight:600}}>{OCOL[o].emoji} {OCOL[o].name}</span>)}</div>
+      </div>
+      <div style={{display:'flex',flexDirection:'column',gap:16,width:360}}>
+        <button style={{...S.mB,padding:'24px 28px'}} onClick={()=>startGame('score_attack')}><span style={{fontSize:36}}>🎯</span><div><div style={{fontSize:20,fontWeight:700,color:'#f97316'}}>スコアアタック</div><div style={{fontSize:13,color:'#78716c',marginTop:4}}>15ターンでVP最大化</div></div>{hs.sa>0&&<div style={S.hsT}>🏆 {hs.sa}</div>}</button>
+        <button style={{...S.mB,padding:'24px 28px'}} onClick={()=>startGame('time_trial')}><span style={{fontSize:36}}>⏱️</span><div><div style={{fontSize:20,fontWeight:700,color:'#f97316'}}>タイムトライアル</div><div style={{fontSize:13,color:'#78716c',marginTop:4}}>10VP最速到達 vs AI</div></div>{hs.tt<999&&<div style={S.hsT}>🏆 {hs.tt}T</div>}</button>
+      </div>
     </div>
-    <div style={{display:'flex',gap:16,marginTop:12}}>{[OW.P,OW.N1,OW.N2].map(o=><span key={o} style={{color:OCOL[o].m,fontSize:13}}>{OCOL[o].emoji} {OCOL[o].name}</span>)}</div>
-  </div></div>;
+  ) : (
+    <div style={S.tW}>
+      <div style={{fontSize:64}}>🏝️</div>
+      <h1 style={S.h1}>ソロカタン</h1>
+      <p style={{fontSize:13,color:'#78716c',letterSpacing:3}}>Island of Divine Settlers</p>
+      <div style={S.tBs}>
+        <button style={S.mB} onClick={()=>startGame('score_attack')}><span style={{fontSize:28}}>🎯</span><div><div style={{fontSize:15,fontWeight:700,color:'#f97316'}}>スコアアタック</div><div style={{fontSize:11,color:'#78716c'}}>15ターンVP最大化</div></div>{hs.sa>0&&<div style={S.hsT}>🏆{hs.sa}</div>}</button>
+        <button style={S.mB} onClick={()=>startGame('time_trial')}><span style={{fontSize:28}}>⏱️</span><div><div style={{fontSize:15,fontWeight:700,color:'#f97316'}}>タイムトライアル</div><div style={{fontSize:11,color:'#78716c'}}>10VP最速到達</div></div>{hs.tt<999&&<div style={S.hsT}>🏆{hs.tt}T</div>}</button>
+      </div>
+      <div style={{display:'flex',gap:16,marginTop:12}}>{[OW.P,OW.N1,OW.N2].map(o=><span key={o} style={{color:OCOL[o].m,fontSize:13}}>{OCOL[o].emoji} {OCOL[o].name}</span>)}</div>
+    </div>
+  )}</div>;
 
   // ══════════ GAME OVER ══════════
   if(screen==='gameover'){const pv=calcVP(B,OW.P,P),n1=calcVP(B,OW.N1,npcs.npc1),n2=calcVP(B,OW.N2,npcs.npc2);const w=pv>=n1&&pv>=n2?'player':n1>=n2?'npc1':'npc2';
-  return <div style={S.ctn}><div style={S.tW}>
-    <div style={{fontSize:56}}>{w==='player'?'🎉':'😢'}</div>
-    <h1 style={S.h1}>{w==='player'?'勝利！':'敗北…'}</h1>
-    <div style={S.goS}>{[{o:'player',vp:pv},{o:'npc1',vp:n1},{o:'npc2',vp:n2}].sort((a,b)=>b.vp-a.vp).map(({o,vp},i)=>
+  return <div style={isPC ? S.ctnPC : S.ctn}><div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:isPC?40:20,gap:isPC?24:18}}>
+    <div style={{fontSize:isPC?72:56}}>{w==='player'?'🎉':'😢'}</div>
+    <h1 style={{...S.h1,fontSize:isPC?48:32}}>{w==='player'?'勝利！':'敗北…'}</h1>
+    <div style={{...S.goS,maxWidth:isPC?400:300}}>{[{o:'player',vp:pv},{o:'npc1',vp:n1},{o:'npc2',vp:n2}].sort((a,b)=>b.vp-a.vp).map(({o,vp},i)=>
       <div key={o} style={{display:'flex',justifyContent:'space-between',padding:'8px 12px',borderLeft:`4px solid ${OCOL[o].m}`,background:o===w?'rgba(245,158,11,.06)':'transparent',borderRadius:4}}>
         <span style={{color:OCOL[o].m,fontWeight:700}}>{i===0?'👑 ':''}{OCOL[o].name}</span><span style={{color:OCOL[o].m,fontWeight:900,fontSize:20}}>{vp}VP</span></div>)}
       <div style={{display:'flex',justifyContent:'space-between',padding:'6px 12px',color:'#78716c'}}><span>ターン</span><span style={{color:'#f59e0b'}}>{turn}</span></div>
     </div>
-    <div style={{display:'flex',gap:10,marginTop:14}}>
-      <button style={S.gB} onClick={()=>startGame(mode)}>もう一度</button>
-      <button style={S.sB} onClick={()=>setScreen('title')}>タイトル</button>
+    <div style={{display:'flex',gap:isPC?16:10,marginTop:isPC?20:14}}>
+      <button style={{...S.gB,padding:isPC?'14px 32px':'10px 20px',fontSize:isPC?16:14}} onClick={()=>startGame(mode)}>もう一度</button>
+      <button style={{...S.sB,padding:isPC?'14px 24px':'10px 14px'}} onClick={()=>setScreen('title')}>タイトル</button>
     </div>
   </div></div>;}
 
   // ══════════ MAIN GAME ══════════
-  return <div style={{...S.ctn, ...(isPC ? {maxWidth:'100%', width:'100%'} : {})}}>
+  return <div style={isPC ? S.ctnPC : S.ctn}>
     <div style={S.hdr}>
-      <span style={{fontSize:12,color:'#78716c'}}>{mode==='score_attack'?'🎯':'⏱️'} T{turn}{mode==='score_attack'?'/15':''}</span>
-      <span style={{fontSize:10,color:'#a8a29e'}}>🏆{mode==='score_attack'?hs.sa:hs.tt<999?hs.tt+'T':'-'}</span>
+      <span style={{fontSize:isPC?14:12,color:'#78716c'}}>{mode==='score_attack'?'🎯':'⏱️'} T{turn}{mode==='score_attack'?'/15':''}</span>
+      <span style={{fontSize:isPC?12:10,color:'#a8a29e',fontWeight:700}}>🏆{mode==='score_attack'?hs.sa:hs.tt<999?hs.tt+'T':'-'}</span>
     </div>
 
     {hint&&<div style={S.hint}>{hint}</div>}
@@ -652,7 +659,7 @@ export default function SoloCatan(){
         </div>}
 
         {/* Log */}
-        <div style={{maxHeight:120,overflowY:'auto',padding:'4px 0'}}>{log.slice(0,8).map((m,i)=><div key={i} style={{fontSize:10,color:'#78716c',opacity:1-i*.1,padding:'1px 0'}}>{m}</div>)}</div>
+        <div style={{maxHeight:120,overflowY:'auto',padding:'4px 0'}}>{log.slice(0,8).map((m,i)=><div key={i} style={{fontSize:12,color:i===0?'#1c1917':'#78716c',opacity:1-i*.1,padding:'2px 0'}}>{m}</div>)}</div>
       </div>}
     </div>
 
@@ -753,4 +760,5 @@ const S={
   sB:{padding:'10px 14px',background:'rgba(0,0,0,.03)',color:'#78716c',border:'1.5px solid rgba(0,0,0,.08)',borderRadius:12,cursor:'pointer',fontSize:13,fontFamily:'inherit'},
   rB:{position:'absolute',top:68,left:'50%',transform:'translateX(-50%)',background:'#ffffff',color:'#f97316',padding:'7px 14px',borderRadius:10,fontSize:13,fontWeight:700,zIndex:50,border:'1.5px solid rgba(249,115,22,.3)',whiteSpace:'nowrap',boxShadow:'0 4px 16px rgba(0,0,0,.1)'},
   goS:{width:'100%',maxWidth:300,display:'flex',flexDirection:'column',gap:6,background:'#ffffff',borderRadius:16,padding:16,boxShadow:'0 4px 20px rgba(0,0,0,.08)'},
+  ctnPC:{width:'100vw',maxWidth:'100vw',minHeight:'100vh',background:'linear-gradient(160deg,#fdf6ec 0%,#fef3c7 40%,#e0f2fe 100%)',fontFamily:"'DM Sans','Noto Sans JP',sans-serif",color:'#1c1917',display:'flex',flexDirection:'column',overflow:'hidden',position:'relative'},
 };
