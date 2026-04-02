@@ -1,5 +1,15 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 
+const useIsPC = () => {
+  const [isPC, setIsPC] = useState(window.innerWidth >= 900);
+  useEffect(() => {
+    const fn = () => setIsPC(window.innerWidth >= 900);
+    window.addEventListener('resize', fn);
+    return () => window.removeEventListener('resize', fn);
+  }, []);
+  return isPC;
+};
+
 const HEX=36,S3=Math.sqrt(3),DEPTH=8;
 const TC={forest:4,hill:3,pasture:4,field:4,mountain:3,desert:1};
 const TCOL={forest:['#1a4d0f','#2d6b1b','#3a8526'],hill:['#8b3a0e','#c1540e','#d4722a'],pasture:['#4a9030','#6cbf48','#8fd668'],field:['#c49a20','#e8c038','#f5d84a'],mountain:['#555568','#7a7a90','#9595a8'],desert:['#c4a060','#d4b88a','#e0cca0']};
@@ -146,6 +156,32 @@ function ResCards({x,y,res,owner}){
   })}</g>;
 }
 
+function PlayerCard({owner, vp, res, active}) {
+  const c = OCOL[owner];
+  return (
+    <div style={{
+      border: `1.5px solid ${active ? c.m : 'rgba(100,150,200,.15)'}`,
+      borderRadius: 10,
+      padding: '8px 10px',
+      background: active ? `linear-gradient(135deg,${c.bg},rgba(0,0,0,.3))` : 'rgba(0,0,0,.2)',
+      transition: 'all .3s',
+    }}>
+      <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:6}}>
+        <span style={{color:c.m, fontWeight:700, fontSize:13}}>{c.emoji} {c.name}</span>
+        <span style={{color:'#ffd700', fontWeight:900, fontSize:18}}>{vp}VP</span>
+      </div>
+      <div style={{display:'flex', gap:6}}>
+        {RK.map(r => (
+          <div key={r} style={{textAlign:'center', flex:1, opacity:(res[r]||0)>0?1:.3}}>
+            <div style={{fontSize:14}}>{REMJ[r]}</div>
+            <div style={{fontSize:11, color:'#fff', fontWeight:700}}>{res[r]||0}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ═══════════════════════════════════════════════════
 // MAIN APP
 // ═══════════════════════════════════════════════════
@@ -174,6 +210,8 @@ export default function SoloCatan(){
   // v5: BUG-3 - track special card owners
   const [armyOwner,setArmyOwner]=useState(null);
   const [roadOwner,setRoadOwner]=useState(null);
+
+  const isPC = useIsPC();
 
   useEffect(()=>{
     const link=document.createElement('link');link.href='https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Noto+Sans+JP:wght@400;600;700;900&display=swap';link.rel='stylesheet';document.head.appendChild(link);
@@ -461,7 +499,9 @@ export default function SoloCatan(){
     setTimeout(processNpc,300);
   },[phase,npcActive,B,npcs,P,devDk,collectRes,spawnFlyCards,updateSpecials,finishTurn,addLog]);
 
-  const ox=SVG_W/2-bc.x,oy=SVG_H/2-bc.y-10;
+  const svgW = isPC ? 660 : SVG_W;
+  const svgH = isPC ? 660 : SVG_H;
+  const ox = svgW/2 - bc.x, oy = svgH/2 - bc.y - 10;
   // v5: BUG-2 - clickable vertices/edges updated for 8-step init
   const clickV=phase==='init'?(pSt===0||pSt===6):phase==='build';
   const clickE=phase==='init'?(pSt===1||pSt===7):phase==='build'&&canAff(P?.resources||emR(),COST.road)&&(P?.rL||0)>0;
@@ -498,7 +538,7 @@ export default function SoloCatan(){
   </div></div>;}
 
   // ══════════ MAIN GAME ══════════
-  return <div style={S.ctn}>
+  return <div style={{...S.ctn, ...(isPC ? {maxWidth:'100vw'} : {})}}>
     <div style={S.hdr}>
       <span style={{fontSize:12,color:'#8bc4f0'}}>{mode==='score_attack'?'🎯':'⏱️'} T{turn}{mode==='score_attack'?'/15':''}</span>
       <span style={{fontSize:10,color:'#6a8aaa'}}>🏆{mode==='score_attack'?hs.sa:hs.tt<999?hs.tt+'T':'-'}</span>
@@ -507,98 +547,163 @@ export default function SoloCatan(){
     {hint&&<div style={S.hint}>{hint}</div>}
     {npcMsg&&<div key={npcMsg.msg+turn+String(Math.random()).slice(2,6)} style={{...S.npcT,borderColor:OCOL[npcMsg.ow].m,background:`linear-gradient(135deg,${OCOL[npcMsg.ow].bg},rgba(0,0,0,.85))`}}><span style={{color:OCOL[npcMsg.ow].m}}>{OCOL[npcMsg.ow].emoji} {npcMsg.msg}</span></div>}
 
-    <div style={S.bW}>
-      <svg viewBox={`0 0 ${SVG_W} ${SVG_H}`} style={{width:'100%',height:'100%'}}>
-        <defs>
-          <filter id="hs"><feDropShadow dx="1" dy="2" stdDeviation="1.5" floodOpacity=".3"/></filter>
-          <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-          <radialGradient id="ocean" cx="50%" cy="45%"><stop offset="20%" stopColor="#1a6090"/><stop offset="60%" stopColor="#0e3a5e"/><stop offset="100%" stopColor="#061e35"/></radialGradient>
-          {Object.entries(TCOL).map(([t,cs])=><radialGradient key={t} id={`tg_${t}`} cx="40%" cy="30%"><stop offset="0%" stopColor={cs[2]}/><stop offset="55%" stopColor={cs[1]}/><stop offset="100%" stopColor={cs[0]}/></radialGradient>)}
-        </defs>
-        <rect width={SVG_W} height={SVG_H} fill="url(#ocean)"/>
-        {[0,1,2,3,4].map(i=><ellipse key={i} cx={SVG_W/2} cy={SVG_H/2} rx={100+i*28} ry={80+i*22} fill="none" stroke="rgba(80,160,220,.08)" strokeWidth="1.5" style={{animation:`waveBob ${2+i*.3}s ease-in-out ${i*.2}s infinite`}}/>)}
-        <g transform={`translate(${ox},${oy})`}>
-          {coast&&<g><polygon points={coast.shore} fill="rgba(30,100,160,.3)" stroke="rgba(80,180,255,.15)" strokeWidth="1"/><polygon points={coast.beach} fill="#c8a96a" stroke="#a08040" strokeWidth="1" opacity=".7"/></g>}
-          {B&&[...B.tiles].sort((a,b)=>a.cy-b.cy).map(t=><Hex3D key={t.id} t={t} showR={showRobber} robId={B.robId} onClick={hTC} glow={glowTiles.has(t.id)}/>)}
-          {B?.ports?.map((pe,i)=>{const e=B.E[pe.eid];if(!e)return null;const v1=B.V[e.vs[0]],v2=B.V[e.vs[1]];const mx=(v1.x+v2.x)/2,my=(v1.y+v2.y)/2;const d=Math.sqrt(mx*mx+my*my)||1;const px=mx+(mx/d)*12,py=my+(my/d)*12;const lb=pe.type==='3:1'?'3:1':'2:1';const re=pe.type!=='3:1'?REMJ[pe.type]:'⚓';
-            return <g key={i}><line x1={mx} y1={my} x2={px} y2={py} stroke="#8B6914" strokeWidth="3" strokeLinecap="round"/><rect x={px-4} y={py-3} width="8" height="6" rx="1" fill="#6b4c2a" stroke="#4a3018" strokeWidth=".6"/><text x={px} y={py+11} textAnchor="middle" fontSize="6" fill="#ffd700" fontWeight="bold" style={{pointerEvents:'none'}}>{lb}</text><text x={px} y={py+18} textAnchor="middle" fontSize="7" style={{pointerEvents:'none'}}>{re}</text></g>;})}
-          {B?.E.map(e=>{const v1=B.V[e.vs[0]],v2=B.V[e.vs[1]];
-            if(e.o)return <Road key={`e${e.id}`} x1={v1.x} y1={v1.y} x2={v2.x} y2={v2.y} owner={e.o}/>;
-            if(clickE&&!showRobber)return <line key={`e${e.id}`} x1={v1.x} y1={v1.y} x2={v2.x} y2={v2.y} stroke="transparent" strokeWidth="12" style={{cursor:'pointer'}} onClick={ev=>{ev.stopPropagation();hEC(e.id);}}/>;
-            return null;})}
-          {B?.V.map(v=>{
-            if(v.b==='city')return <CityB key={`v${v.id}`} x={v.x} y={v.y} owner={v.o}/>;
-            if(v.b==='settlement')return <g key={`v${v.id}`} onClick={()=>v.o===OW.P&&phase==='build'&&hVC(v.id)} style={{cursor:v.o===OW.P&&phase==='build'?'pointer':'default'}}><Settlement x={v.x} y={v.y} owner={v.o}/></g>;
-            if(clickV&&!showRobber){const can=phase==='init'||canAff(P?.resources||emR(),COST.settlement);if(!can)return null;
-              return <circle key={`v${v.id}`} cx={v.x} cy={v.y} r="6" fill="rgba(255,215,0,.2)" stroke="#ffd700" strokeWidth="1.5" strokeDasharray="3,2" style={{cursor:'pointer',animation:'pulse 1.2s infinite'}} onClick={()=>hVC(v.id)}/>;}
-            return null;})}
-          {flyCards.map(card=>{
-            const style={animationName:'flyCard',animationDuration:'1.1s',animationTimingFunction:'cubic-bezier(.2,.8,.3,1)',animationDelay:card.delay+'s',animationFillMode:'both','--sx':card.sx+'px','--sy':card.sy+'px','--rot':String(card.rot)};
-            return <g key={card.id} transform={`translate(${card.tx},${card.ty})`}><g style={style}><rect x="-6" y="-9" width="12" height="18" rx="2" fill="rgba(0,0,0,.5)" stroke={card.color} strokeWidth="1.2"/><text x="0" y="2" textAnchor="middle" fontSize="10" style={{pointerEvents:'none'}}>{card.emoji}</text></g></g>;
-          })}
-          {[{ow:OW.P,vp:pVP,res:P?.resources||emR()},{ow:OW.N1,vp:n1VP,res:npcs.npc1?.resources||emR()},{ow:OW.N2,vp:n2VP,res:npcs.npc2?.resources||emR()}].map(({ow,vp,res})=>{
-            const s=SEATS[ow];const active=(phase==='build'||phase==='dice')&&!npcActive&&ow===OW.P||npcActive&&(ow===OW.N1||ow===OW.N2);
-            return <g key={ow}><Avatar x={s.x} y={s.y} owner={ow} vp={vp} active={active}/><ResCards x={s.x} y={s.y+36} res={res} owner={ow}/></g>;
-          })}
-        </g>
-      </svg>
-    </div>
+    <div style={isPC ? {display:'flex', flexDirection:'row', flex:1, overflow:'hidden'} : {display:'flex', flexDirection:'column', flex:1}}>
+      {/* Board column */}
+      <div style={isPC ? {flex:1, display:'flex', alignItems:'center', justifyContent:'center', padding:16, minWidth:0} : S.bW}>
+        <svg viewBox={`0 0 ${svgW} ${svgH}`} style={{width:'100%',height:'100%', ...(isPC ? {maxHeight:'calc(100vh - 80px)'} : {})}}>
+          <defs>
+            <filter id="hs"><feDropShadow dx="1" dy="2" stdDeviation="1.5" floodOpacity=".3"/></filter>
+            <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <radialGradient id="ocean" cx="50%" cy="45%"><stop offset="20%" stopColor="#1a6090"/><stop offset="60%" stopColor="#0e3a5e"/><stop offset="100%" stopColor="#061e35"/></radialGradient>
+            {Object.entries(TCOL).map(([t,cs])=><radialGradient key={t} id={`tg_${t}`} cx="40%" cy="30%"><stop offset="0%" stopColor={cs[2]}/><stop offset="55%" stopColor={cs[1]}/><stop offset="100%" stopColor={cs[0]}/></radialGradient>)}
+          </defs>
+          <rect width={svgW} height={svgH} fill="url(#ocean)"/>
+          {[0,1,2,3,4].map(i=><ellipse key={i} cx={svgW/2} cy={svgH/2} rx={100+i*28} ry={80+i*22} fill="none" stroke="rgba(80,160,220,.08)" strokeWidth="1.5" style={{animation:`waveBob ${2+i*.3}s ease-in-out ${i*.2}s infinite`}}/>)}
+          <g transform={`translate(${ox},${oy})`}>
+            {coast&&<g><polygon points={coast.shore} fill="rgba(30,100,160,.3)" stroke="rgba(80,180,255,.15)" strokeWidth="1"/><polygon points={coast.beach} fill="#c8a96a" stroke="#a08040" strokeWidth="1" opacity=".7"/></g>}
+            {B&&[...B.tiles].sort((a,b)=>a.cy-b.cy).map(t=><Hex3D key={t.id} t={t} showR={showRobber} robId={B.robId} onClick={hTC} glow={glowTiles.has(t.id)}/>)}
+            {B?.ports?.map((pe,i)=>{const e=B.E[pe.eid];if(!e)return null;const v1=B.V[e.vs[0]],v2=B.V[e.vs[1]];const mx=(v1.x+v2.x)/2,my=(v1.y+v2.y)/2;const d=Math.sqrt(mx*mx+my*my)||1;const px=mx+(mx/d)*12,py=my+(my/d)*12;const lb=pe.type==='3:1'?'3:1':'2:1';const re=pe.type!=='3:1'?REMJ[pe.type]:'⚓';
+              return <g key={i}><line x1={mx} y1={my} x2={px} y2={py} stroke="#8B6914" strokeWidth="3" strokeLinecap="round"/><rect x={px-4} y={py-3} width="8" height="6" rx="1" fill="#6b4c2a" stroke="#4a3018" strokeWidth=".6"/><text x={px} y={py+11} textAnchor="middle" fontSize="6" fill="#ffd700" fontWeight="bold" style={{pointerEvents:'none'}}>{lb}</text><text x={px} y={py+18} textAnchor="middle" fontSize="7" style={{pointerEvents:'none'}}>{re}</text></g>;})}
+            {B?.E.map(e=>{const v1=B.V[e.vs[0]],v2=B.V[e.vs[1]];
+              if(e.o)return <Road key={`e${e.id}`} x1={v1.x} y1={v1.y} x2={v2.x} y2={v2.y} owner={e.o}/>;
+              if(clickE&&!showRobber)return <line key={`e${e.id}`} x1={v1.x} y1={v1.y} x2={v2.x} y2={v2.y} stroke="transparent" strokeWidth="12" style={{cursor:'pointer'}} onClick={ev=>{ev.stopPropagation();hEC(e.id);}}/>;
+              return null;})}
+            {B?.V.map(v=>{
+              if(v.b==='city')return <CityB key={`v${v.id}`} x={v.x} y={v.y} owner={v.o}/>;
+              if(v.b==='settlement')return <g key={`v${v.id}`} onClick={()=>v.o===OW.P&&phase==='build'&&hVC(v.id)} style={{cursor:v.o===OW.P&&phase==='build'?'pointer':'default'}}><Settlement x={v.x} y={v.y} owner={v.o}/></g>;
+              if(clickV&&!showRobber){const can=phase==='init'||canAff(P?.resources||emR(),COST.settlement);if(!can)return null;
+                return <circle key={`v${v.id}`} cx={v.x} cy={v.y} r="6" fill="rgba(255,215,0,.2)" stroke="#ffd700" strokeWidth="1.5" strokeDasharray="3,2" style={{cursor:'pointer',animation:'pulse 1.2s infinite'}} onClick={()=>hVC(v.id)}/>;}
+              return null;})}
+            {flyCards.map(card=>{
+              const style={animationName:'flyCard',animationDuration:'1.1s',animationTimingFunction:'cubic-bezier(.2,.8,.3,1)',animationDelay:card.delay+'s',animationFillMode:'both','--sx':card.sx+'px','--sy':card.sy+'px','--rot':String(card.rot)};
+              return <g key={card.id} transform={`translate(${card.tx},${card.ty})`}><g style={style}><rect x="-6" y="-9" width="12" height="18" rx="2" fill="rgba(0,0,0,.5)" stroke={card.color} strokeWidth="1.2"/><text x="0" y="2" textAnchor="middle" fontSize="10" style={{pointerEvents:'none'}}>{card.emoji}</text></g></g>;
+            })}
+            {!isPC && [{ow:OW.P,vp:pVP,res:P?.resources||emR()},{ow:OW.N1,vp:n1VP,res:npcs.npc1?.resources||emR()},{ow:OW.N2,vp:n2VP,res:npcs.npc2?.resources||emR()}].map(({ow,vp,res})=>{
+              const s=SEATS[ow];const active=(phase==='build'||phase==='dice')&&!npcActive&&ow===OW.P||npcActive&&(ow===OW.N1||ow===OW.N2);
+              return <g key={ow}><Avatar x={s.x} y={s.y} owner={ow} vp={vp} active={active}/><ResCards x={s.x} y={s.y+36} res={res} owner={ow}/></g>;
+            })}
+          </g>
+        </svg>
+      </div>
 
-    {/* DICE */}
-    <div style={S.aR}>
-      {phase==='dice'&&!npcActive&&<button style={S.dB} onClick={rollDice} disabled={rolling}><span style={rolling?{display:'inline-block',animation:'diceShake .3s infinite'}:{}}>{rolling?'🎲🎲':dice?`🎲 ${dice[0]}+${dice[1]}`:'🎲 ダイスロール'}</span></button>}
-    </div>
-
-    {/* NPC dice display */}
-    {dice&&npcActive&&<div style={S.dS}><span style={{fontSize:22,color:'#ffd700'}}>{'⚀⚁⚂⚃⚄⚅'[dice[0]-1]}</span><span style={{fontSize:22,color:'#ffd700'}}>{'⚀⚁⚂⚃⚄⚅'[dice[1]-1]}</span><span style={{fontSize:14,fontWeight:900,color:'#ffd700',marginLeft:4}}>{dice[0]+dice[1]}</span></div>}
-
-    {/* Player dice result */}
-    {dice&&phase!=='dice'&&!npcActive&&<div style={S.dS}><span style={{fontSize:22,color:'#ffd700'}}>{'⚀⚁⚂⚃⚄⚅'[dice[0]-1]}</span><span style={{fontSize:22,color:'#ffd700'}}>{'⚀⚁⚂⚃⚄⚅'[dice[1]-1]}</span><span style={{fontSize:14,fontWeight:900,color:'#ffd700',marginLeft:4}}>{dice[0]+dice[1]}</span></div>}
-
-    {/* ACTION PANEL - v5 redesign */}
-    {phase==='build'&&!npcActive&&<div style={{padding:'4px 8px 2px'}}>
-      {/* Build action cards */}
-      <div style={{display:'flex',gap:4,justifyContent:'center',marginBottom:4}}>
-        {[
-          {icon:'🛤️',name:'道路',cost:COST.road,rem:P?.rL||0,costShow:[['🪵',1],['🧱',1]]},
-          {icon:'🏠',name:'開拓地',cost:COST.settlement,rem:P?.sL||0,costShow:[['🪵',1],['🧱',1],['🐑',1],['🌾',1]]},
-          {icon:'🏰',name:'都市',cost:COST.city,rem:P?.cL||0,costShow:[['🌾',2],['⛏️',3]]},
-          {icon:'🃏',name:'発展',cost:COST.devcard,rem:devDk.length,costShow:[['🐑',1],['🌾',1],['⛏️',1]],onClick:buyDev},
-        ].map(({icon,name,cost,rem,costShow,onClick},i)=>{
-          const afford=canAff(P?.resources||emR(),cost)&&rem>0;
-          return <button key={i} onClick={onClick||undefined} style={{
-            display:'flex',flexDirection:'column',alignItems:'center',gap:1,
-            padding:'6px 6px 4px',borderRadius:10,border:afford?'1.5px solid rgba(255,215,0,.4)':'1px solid rgba(100,150,200,.1)',
-            background:afford?'rgba(255,215,0,.08)':'rgba(0,0,0,.2)',
-            cursor:onClick&&afford?'pointer':'default',opacity:afford?1:.4,
-            minWidth:60,transition:'all .15s',fontFamily:'inherit',color:'#e0eef8',
-          }}>
-            <span style={{fontSize:16}}>{icon}</span>
-            <span style={{fontSize:9,fontWeight:700,color:afford?'#ffd700':'#4a6a80'}}>{name}</span>
-            <div style={{display:'flex',gap:2,flexWrap:'wrap',justifyContent:'center'}}>
-              {costShow.map(([emoji,n],j)=>{
-                const resKey=RK.find(k=>REMJ[k]===emoji);
-                const have=resKey?(P?.resources[resKey]||0):0;
-                const enough=have>=n;
-                return <span key={j} style={{fontSize:8,opacity:enough?1:.5,background:enough?'rgba(255,255,255,.08)':'rgba(255,0,0,.1)',borderRadius:3,padding:'1px 2px'}}>
-                  {emoji}{n}
-                </span>;
-              })}
-            </div>
-            <span style={{fontSize:7,color:'#6a8aaa'}}>残{rem}</span>
-          </button>;
+      {/* Right panel (PC only) */}
+      {isPC && <div style={{width:320, flexShrink:0, display:'flex', flexDirection:'column', gap:8, padding:'12px 16px', overflowY:'auto', maxHeight:'calc(100vh - 80px)', borderLeft:'1px solid rgba(100,180,255,.1)'}}>
+        {/* Player cards */}
+        {[{ow:OW.P,vp:pVP,res:P?.resources||emR()},{ow:OW.N1,vp:n1VP,res:npcs.npc1?.resources||emR()},{ow:OW.N2,vp:n2VP,res:npcs.npc2?.resources||emR()}].map(({ow,vp,res})=>{
+          const active=(phase==='build'||phase==='dice')&&!npcActive&&ow===OW.P||npcActive&&(ow===OW.N1||ow===OW.N2);
+          return <PlayerCard key={ow} owner={ow} vp={vp} res={res} active={active}/>;
         })}
-      </div>
-      {/* Utility buttons row */}
-      <div style={{display:'flex',gap:5,justifyContent:'center'}}>
-        {hasK&&<button style={{...S.aB,...S.aBOn,fontSize:12}} onClick={useKnight}>⚔️ 騎士を使う</button>}
-        <button style={{...S.aB,...S.aBOn,fontSize:12}} onClick={()=>{setShowTrade(true);setTGive(null);setTGet(null);}}>🔄 港交換</button>
-        <button style={{...S.aB,...S.eB,fontSize:13,padding:'8px 20px'}} onClick={endTurn}>⏭️ ターン終了</button>
-      </div>
-    </div>}
 
-    <div style={{padding:'2px 12px 8px',maxHeight:55,overflow:'hidden'}}>{log.slice(0,3).map((m,i)=><div key={i} style={{fontSize:10,color:'#8bb8d8',opacity:1-i*.3,padding:'1px 0'}}>{m}</div>)}</div>
+        {/* Dice */}
+        <div style={{display:'flex',gap:5,justifyContent:'center',flexWrap:'wrap',padding:'4px 0'}}>
+          {phase==='dice'&&!npcActive&&<button style={S.dB} onClick={rollDice} disabled={rolling}><span style={rolling?{display:'inline-block',animation:'diceShake .3s infinite'}:{}}>{rolling?'🎲🎲':dice?`🎲 ${dice[0]}+${dice[1]}`:'🎲 ダイスロール'}</span></button>}
+        </div>
+        {dice&&<div style={S.dS}><span style={{fontSize:22,color:'#ffd700'}}>{'⚀⚁⚂⚃⚄⚅'[dice[0]-1]}</span><span style={{fontSize:22,color:'#ffd700'}}>{'⚀⚁⚂⚃⚄⚅'[dice[1]-1]}</span><span style={{fontSize:14,fontWeight:900,color:'#ffd700',marginLeft:4}}>{dice[0]+dice[1]}</span></div>}
 
+        {/* Build panel (PC) */}
+        {phase==='build'&&!npcActive&&<div>
+          <div style={{display:'flex',gap:4,justifyContent:'center',marginBottom:4,flexWrap:'wrap'}}>
+            {[
+              {icon:'🛤️',name:'道路',cost:COST.road,rem:P?.rL||0,costShow:[['🪵',1],['🧱',1]]},
+              {icon:'🏠',name:'開拓地',cost:COST.settlement,rem:P?.sL||0,costShow:[['🪵',1],['🧱',1],['🐑',1],['🌾',1]]},
+              {icon:'🏰',name:'都市',cost:COST.city,rem:P?.cL||0,costShow:[['🌾',2],['⛏️',3]]},
+              {icon:'🃏',name:'発展',cost:COST.devcard,rem:devDk.length,costShow:[['🐑',1],['🌾',1],['⛏️',1]],onClick:buyDev},
+            ].map(({icon,name,cost,rem,costShow,onClick},i)=>{
+              const afford=canAff(P?.resources||emR(),cost)&&rem>0;
+              return <button key={i} onClick={onClick||undefined} style={{
+                display:'flex',flexDirection:'column',alignItems:'center',gap:1,
+                padding:'6px 6px 4px',borderRadius:10,border:afford?'1.5px solid rgba(255,215,0,.4)':'1px solid rgba(100,150,200,.1)',
+                background:afford?'rgba(255,215,0,.08)':'rgba(0,0,0,.2)',
+                cursor:onClick&&afford?'pointer':'default',opacity:afford?1:.4,
+                minWidth:60,transition:'all .15s',fontFamily:'inherit',color:'#e0eef8',
+              }}>
+                <span style={{fontSize:16}}>{icon}</span>
+                <span style={{fontSize:9,fontWeight:700,color:afford?'#ffd700':'#4a6a80'}}>{name}</span>
+                <div style={{display:'flex',gap:2,flexWrap:'wrap',justifyContent:'center'}}>
+                  {costShow.map(([emoji,n],j)=>{
+                    const resKey=RK.find(k=>REMJ[k]===emoji);
+                    const have=resKey?(P?.resources[resKey]||0):0;
+                    const enough=have>=n;
+                    return <span key={j} style={{fontSize:8,opacity:enough?1:.5,background:enough?'rgba(255,255,255,.08)':'rgba(255,0,0,.1)',borderRadius:3,padding:'1px 2px'}}>
+                      {emoji}{n}
+                    </span>;
+                  })}
+                </div>
+                <span style={{fontSize:7,color:'#6a8aaa'}}>残{rem}</span>
+              </button>;
+            })}
+          </div>
+          <div style={{display:'flex',gap:5,justifyContent:'center',flexWrap:'wrap'}}>
+            {hasK&&<button style={{...S.aB,...S.aBOn,fontSize:12}} onClick={useKnight}>⚔️ 騎士を使う</button>}
+            <button style={{...S.aB,...S.aBOn,fontSize:12}} onClick={()=>{setShowTrade(true);setTGive(null);setTGet(null);}}>🔄 港交換</button>
+            <button style={{...S.aB,...S.eB,fontSize:13,padding:'8px 20px'}} onClick={endTurn}>⏭️ ターン終了</button>
+          </div>
+        </div>}
+
+        {/* Log */}
+        <div style={{maxHeight:120,overflowY:'auto',padding:'4px 0'}}>{log.slice(0,8).map((m,i)=><div key={i} style={{fontSize:10,color:'#8bb8d8',opacity:1-i*.1,padding:'1px 0'}}>{m}</div>)}</div>
+      </div>}
+    </div>
+
+    {/* Mobile-only controls (hidden on PC) */}
+    {!isPC && <>
+      {/* DICE */}
+      <div style={S.aR}>
+        {phase==='dice'&&!npcActive&&<button style={S.dB} onClick={rollDice} disabled={rolling}><span style={rolling?{display:'inline-block',animation:'diceShake .3s infinite'}:{}}>{rolling?'🎲🎲':dice?`🎲 ${dice[0]}+${dice[1]}`:'🎲 ダイスロール'}</span></button>}
+      </div>
+
+      {/* NPC dice display */}
+      {dice&&npcActive&&<div style={S.dS}><span style={{fontSize:22,color:'#ffd700'}}>{'⚀⚁⚂⚃⚄⚅'[dice[0]-1]}</span><span style={{fontSize:22,color:'#ffd700'}}>{'⚀⚁⚂⚃⚄⚅'[dice[1]-1]}</span><span style={{fontSize:14,fontWeight:900,color:'#ffd700',marginLeft:4}}>{dice[0]+dice[1]}</span></div>}
+
+      {/* Player dice result */}
+      {dice&&phase!=='dice'&&!npcActive&&<div style={S.dS}><span style={{fontSize:22,color:'#ffd700'}}>{'⚀⚁⚂⚃⚄⚅'[dice[0]-1]}</span><span style={{fontSize:22,color:'#ffd700'}}>{'⚀⚁⚂⚃⚄⚅'[dice[1]-1]}</span><span style={{fontSize:14,fontWeight:900,color:'#ffd700',marginLeft:4}}>{dice[0]+dice[1]}</span></div>}
+
+      {/* ACTION PANEL - v5 redesign */}
+      {phase==='build'&&!npcActive&&<div style={{padding:'4px 8px 2px'}}>
+        {/* Build action cards */}
+        <div style={{display:'flex',gap:4,justifyContent:'center',marginBottom:4}}>
+          {[
+            {icon:'🛤️',name:'道路',cost:COST.road,rem:P?.rL||0,costShow:[['🪵',1],['🧱',1]]},
+            {icon:'🏠',name:'開拓地',cost:COST.settlement,rem:P?.sL||0,costShow:[['🪵',1],['🧱',1],['🐑',1],['🌾',1]]},
+            {icon:'🏰',name:'都市',cost:COST.city,rem:P?.cL||0,costShow:[['🌾',2],['⛏️',3]]},
+            {icon:'🃏',name:'発展',cost:COST.devcard,rem:devDk.length,costShow:[['🐑',1],['🌾',1],['⛏️',1]],onClick:buyDev},
+          ].map(({icon,name,cost,rem,costShow,onClick},i)=>{
+            const afford=canAff(P?.resources||emR(),cost)&&rem>0;
+            return <button key={i} onClick={onClick||undefined} style={{
+              display:'flex',flexDirection:'column',alignItems:'center',gap:1,
+              padding:'6px 6px 4px',borderRadius:10,border:afford?'1.5px solid rgba(255,215,0,.4)':'1px solid rgba(100,150,200,.1)',
+              background:afford?'rgba(255,215,0,.08)':'rgba(0,0,0,.2)',
+              cursor:onClick&&afford?'pointer':'default',opacity:afford?1:.4,
+              minWidth:60,transition:'all .15s',fontFamily:'inherit',color:'#e0eef8',
+            }}>
+              <span style={{fontSize:16}}>{icon}</span>
+              <span style={{fontSize:9,fontWeight:700,color:afford?'#ffd700':'#4a6a80'}}>{name}</span>
+              <div style={{display:'flex',gap:2,flexWrap:'wrap',justifyContent:'center'}}>
+                {costShow.map(([emoji,n],j)=>{
+                  const resKey=RK.find(k=>REMJ[k]===emoji);
+                  const have=resKey?(P?.resources[resKey]||0):0;
+                  const enough=have>=n;
+                  return <span key={j} style={{fontSize:8,opacity:enough?1:.5,background:enough?'rgba(255,255,255,.08)':'rgba(255,0,0,.1)',borderRadius:3,padding:'1px 2px'}}>
+                    {emoji}{n}
+                  </span>;
+                })}
+              </div>
+              <span style={{fontSize:7,color:'#6a8aaa'}}>残{rem}</span>
+            </button>;
+          })}
+        </div>
+        {/* Utility buttons row */}
+        <div style={{display:'flex',gap:5,justifyContent:'center'}}>
+          {hasK&&<button style={{...S.aB,...S.aBOn,fontSize:12}} onClick={useKnight}>⚔️ 騎士を使う</button>}
+          <button style={{...S.aB,...S.aBOn,fontSize:12}} onClick={()=>{setShowTrade(true);setTGive(null);setTGet(null);}}>🔄 港交換</button>
+          <button style={{...S.aB,...S.eB,fontSize:13,padding:'8px 20px'}} onClick={endTurn}>⏭️ ターン終了</button>
+        </div>
+      </div>}
+
+      <div style={{padding:'2px 12px 8px',maxHeight:55,overflow:'hidden'}}>{log.slice(0,3).map((m,i)=><div key={i} style={{fontSize:10,color:'#8bb8d8',opacity:1-i*.3,padding:'1px 0'}}>{m}</div>)}</div>
+    </>}
+
+    {/* Trade modal and robber hint (shared) */}
     {showTrade&&<div style={S.modal} onClick={()=>setShowTrade(false)}><div style={S.mBox} onClick={e=>e.stopPropagation()}>
       <h3 style={{textAlign:'center',color:'#ffd700',margin:'0 0 12px',fontSize:16}}>🔄 港交換</h3>
       <div style={{marginBottom:10}}><div style={{fontSize:11,color:'#8bc4f0',marginBottom:4}}>渡す</div><div style={{display:'flex',gap:3,justifyContent:'center'}}>{RK.map(r=>{const rate=getRate(r);const ok=(P?.resources[r]||0)>=rate;return <button key={r} style={{...S.trR,...(tGive===r?S.trS:{}),opacity:ok?1:.3}} onClick={()=>ok&&setTGive(r)}><span style={{fontSize:16}}>{REMJ[r]}</span><span style={{fontSize:10}}>×{rate}</span></button>;})}</div></div>
