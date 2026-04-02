@@ -507,8 +507,6 @@ export default function SoloCatan(){
   // v5: BUG-2 - clickable vertices/edges updated for 8-step init
   const clickV=phase==='init'?(pSt===0||pSt===6):phase==='build';
   const clickE=phase==='init'?(pSt===1||pSt===7):phase==='build'&&canAff(P?.resources||emR(),COST.road)&&(P?.rL||0)>0;
-  const initHints=['🏠 ボード上の頂点をタップして開拓地①を配置','🛤️ 開拓地に隣接する辺をタップして道路①を配置','🤖 赤が配置中…','🤖 青が配置中…','🤖 青が配置中…','🤖 赤が配置中…','🏠 ボード上の頂点をタップして開拓地②を配置','🛤️ 開拓地に隣接する辺をタップして道路②を配置'];
-  const hint=phase==='init'?initHints[pSt]||null:null;
   const hasK=P?.devCards.some(c=>c.type==='knight'&&!c.used);
 
   // ══════════ TITLE ══════════
@@ -561,7 +559,16 @@ export default function SoloCatan(){
       <span style={{fontSize:isPC?12:10,color:'#a8a29e',fontWeight:700}}>🏆{mode==='score_attack'?hs.sa:hs.tt<999?hs.tt+'T':'-'}</span>
     </div>
 
-    {hint&&<div style={S.hint}>{hint}</div>}
+    {phase==='init'&&<div style={{textAlign:'center',padding:'8px 16px',fontSize:13,fontWeight:700,color:(pSt<=1||pSt>=6)?'#f97316':'#78716c',background:(pSt<=1||pSt>=6)?'rgba(249,115,22,.08)':'rgba(0,0,0,.03)',borderBottom:'1px solid rgba(0,0,0,.06)',flexShrink:0}}>
+      {pSt===0&&'🏠 ボードの好きな頂点をタップして最初の開拓地を配置しよう'}
+      {pSt===1&&'🛤️ 開拓地に隣接する辺をタップして道路を配置しよう'}
+      {pSt===2&&'🔥 赤AIが配置中...'}
+      {pSt===3&&'💧 青AIが配置中...'}
+      {pSt===4&&'💧 青AIが2つ目を配置中...'}
+      {pSt===5&&'🔥 赤AIが2つ目を配置中...'}
+      {pSt===6&&'🏠 2つ目の開拓地を配置しよう（ここの周りの資源がもらえるよ）'}
+      {pSt===7&&'🛤️ 2つ目の道路を配置しよう（完了するとゲーム開始！）'}
+    </div>}
     {selectedAction&&phase==='build'&&!npcActive&&<div style={{textAlign:'center',padding:'6px 16px',fontSize:12,fontWeight:700,color:'#f97316',background:'rgba(249,115,22,.08)',borderBottom:'1px solid rgba(249,115,22,.15)',display:'flex',alignItems:'center',justifyContent:'center',gap:8,flexShrink:0}}>
       {selectedAction==='road'&&'🛤️ ボード上の辺をタップして道路を配置'}
       {selectedAction==='settlement'&&'🏠 ボード上の頂点をタップして開拓地を配置'}
@@ -591,6 +598,8 @@ export default function SoloCatan(){
               return <g key={i}><line x1={mx} y1={my} x2={px} y2={py} stroke="#8B6914" strokeWidth="3" strokeLinecap="round"/><rect x={px-4} y={py-3} width="8" height="6" rx="1" fill="#6b4c2a" stroke="#4a3018" strokeWidth=".6"/><text x={px} y={py+11} textAnchor="middle" fontSize="6" fill="#f59e0b" fontWeight="bold" style={{pointerEvents:'none'}}>{lb}</text><text x={px} y={py+18} textAnchor="middle" fontSize="7" style={{pointerEvents:'none'}}>{re}</text></g>;})}
             {B?.E.map(e=>{const v1=B.V[e.vs[0]],v2=B.V[e.vs[1]];
               if(e.o)return <Road key={`e${e.id}`} x1={v1.x} y1={v1.y} x2={v2.x} y2={v2.y} owner={e.o}/>;
+              const isInitRoad=phase==='init'&&(pSt===1||pSt===7)&&!e.o&&e.vs.some(vid=>B.V[vid].b==='settlement'&&B.V[vid].o===OW.P);
+              if(isInitRoad)return <g key={`e${e.id}`}><line x1={v1.x} y1={v1.y} x2={v2.x} y2={v2.y} stroke="#f97316" strokeWidth="5" strokeLinecap="round" strokeDasharray="6,4" opacity=".6" style={{animation:'pulse 1.5s infinite'}}/><line x1={v1.x} y1={v1.y} x2={v2.x} y2={v2.y} stroke="transparent" strokeWidth="14" style={{cursor:'pointer'}} onClick={ev=>{ev.stopPropagation();hEC(e.id);}}/></g>;
               const canPlaceRoad=selectedAction==='road'&&phase==='build'&&!e.o&&e.vs.some(vid=>{const vv=B.V[vid];if(vv.b&&vv.o===OW.P)return true;return vv.ae.some(ae=>ae!==e.id&&B.E[ae].o===OW.P);});
               if(canPlaceRoad)return <line key={`e${e.id}`} x1={v1.x} y1={v1.y} x2={v2.x} y2={v2.y} stroke="#f97316" strokeWidth="4" strokeLinecap="round" strokeDasharray="6,4" opacity=".7" style={{cursor:'pointer',animation:'pulse 1.5s infinite'}} onClick={ev=>{ev.stopPropagation();hEC(e.id);}}/>;
               if(clickE&&!showRobber&&!selectedAction)return <line key={`e${e.id}`} x1={v1.x} y1={v1.y} x2={v2.x} y2={v2.y} stroke="transparent" strokeWidth="12" style={{cursor:'pointer'}} onClick={ev=>{ev.stopPropagation();hEC(e.id);}}/>;
@@ -601,9 +610,11 @@ export default function SoloCatan(){
                 if(selectedAction==='city'&&v.o===OW.P&&phase==='build')return <g key={`v${v.id}`} onClick={()=>hVC(v.id)} style={{cursor:'pointer'}}><Settlement x={v.x} y={v.y} owner={v.o}/><circle cx={v.x} cy={v.y} r="12" fill="none" stroke="#f97316" strokeWidth="2" strokeDasharray="4,3" style={{animation:'pulse 1.2s infinite'}}/></g>;
                 return <g key={`v${v.id}`} onClick={()=>v.o===OW.P&&phase==='build'&&!selectedAction&&hVC(v.id)} style={{cursor:v.o===OW.P&&phase==='build'&&!selectedAction?'pointer':'default'}}><Settlement x={v.x} y={v.y} owner={v.o}/></g>;
               }
+              const isInitSettle=phase==='init'&&(pSt===0||pSt===6)&&!v.b&&!v.av.some(a=>B.V[a].b);
+              if(isInitSettle)return <g key={`v${v.id}`} onClick={()=>hVC(v.id)} style={{cursor:'pointer'}}><circle cx={v.x} cy={v.y} r="9" fill="rgba(249,115,22,.15)" stroke="#f97316" strokeWidth="2" strokeDasharray="4,3" style={{animation:'pulse 1.2s infinite'}}/><text x={v.x} y={v.y+1} textAnchor="middle" dominantBaseline="middle" fontSize="10" style={{pointerEvents:'none'}}>🏠</text></g>;
               const canPlaceSettle=selectedAction==='settlement'&&phase==='build'&&!v.b&&!v.av.some(a=>B.V[a].b)&&v.ae.some(eid=>B.E[eid].o===OW.P);
               if(canPlaceSettle)return <g key={`v${v.id}`} onClick={()=>hVC(v.id)} style={{cursor:'pointer'}}><circle cx={v.x} cy={v.y} r="8" fill="rgba(249,115,22,.2)" stroke="#f97316" strokeWidth="2" strokeDasharray="4,3" style={{animation:'pulse 1.2s infinite'}}/><text x={v.x} y={v.y+1} textAnchor="middle" dominantBaseline="middle" fontSize="10" style={{pointerEvents:'none'}}>🏠</text></g>;
-              if(clickV&&!showRobber&&!selectedAction){const can=phase==='init'||canAff(P?.resources||emR(),COST.settlement);if(!can)return null;
+              if(clickV&&!showRobber&&!selectedAction&&phase==='build'){const can=canAff(P?.resources||emR(),COST.settlement);if(!can)return null;
                 return <circle key={`v${v.id}`} cx={v.x} cy={v.y} r="6" fill="rgba(249,115,22,.15)" stroke="#f97316" strokeWidth="1.5" strokeDasharray="3,2" style={{cursor:'pointer',animation:'pulse 1.2s infinite'}} onClick={()=>hVC(v.id)}/>;}
               return null;})}
             {flyCards.map(card=>{
@@ -621,6 +632,12 @@ export default function SoloCatan(){
 
       {/* Right panel (PC only) */}
       {isPC && <div style={{width:300, flexShrink:0, background:'rgba(255,255,255,.85)', backdropFilter:'blur(12px)', borderLeft:'1px solid rgba(0,0,0,.06)', display:'flex', flexDirection:'column', gap:6, padding:'8px 12px', overflowY:'auto'}}>
+        {/* Init step indicator */}
+        {phase==='init'&&<div style={{display:'flex',gap:3,justifyContent:'center',padding:'6px 0',flexWrap:'wrap'}}>
+          {[{label:'拠点①'},{label:'道路①'},{label:'赤①'},{label:'青①'},{label:'青②'},{label:'赤②'},{label:'拠点②'},{label:'道路②'}].map((step,i)=>
+            <div key={i} style={{fontSize:9,padding:'3px 6px',borderRadius:6,fontWeight:600,background:i===pSt?'#f97316':i<pSt?'rgba(249,115,22,.15)':'rgba(0,0,0,.04)',color:i===pSt?'#fff':i<pSt?'#f97316':'#a8a29e',border:`1px solid ${i===pSt?'#f97316':'transparent'}`}}>{step.label}</div>
+          )}
+        </div>}
         {/* Player cards */}
         {[{ow:OW.P,vp:pVP,res:P?.resources||emR()},{ow:OW.N1,vp:n1VP,res:npcs.npc1?.resources||emR()},{ow:OW.N2,vp:n2VP,res:npcs.npc2?.resources||emR()}].map(({ow,vp,res})=>{
           const active=(phase==='build'||phase==='dice')&&!npcActive&&ow===OW.P||npcActive&&(ow===OW.N1||ow===OW.N2);
