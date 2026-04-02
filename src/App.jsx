@@ -12,7 +12,7 @@ const useIsPC = () => {
 
 const HEX=36,S3=Math.sqrt(3),DEPTH=8;
 const TC={forest:4,hill:3,pasture:4,field:4,mountain:3,desert:1};
-const TCOL={forest:['#15803d','#16a34a','#4ade80'],hill:['#b45309','#d97706','#fbbf24'],pasture:['#65a30d','#84cc16','#bef264'],field:['#ca8a04','#eab308','#fde047'],mountain:['#57534e','#78716c','#a8a29e'],desert:['#d97706','#f59e0b','#fcd34d']};
+const TCOL={forest:['#15803d','#22c55e','#86efac'],hill:['#c2410c','#ea580c','#fb923c'],pasture:['#65a30d','#a3e635','#d9f99d'],field:['#ca8a04','#facc15','#fef08a'],mountain:['#57534e','#78716c','#d6d3d1'],desert:['#d97706','#fbbf24','#fde68a']};
 const TSIDE={forest:'#14532d',hill:'#92400e',pasture:'#3f6212',field:'#713f12',mountain:'#44403c',desert:'#b45309'};
 const RMAP={forest:'wood',hill:'brick',pasture:'sheep',field:'wheat',mountain:'ore'};
 const REMJ={wood:'🪵',brick:'🧱',sheep:'🐑',wheat:'🌾',ore:'⛏️'};
@@ -125,20 +125,27 @@ function Hex3D({t,showR,robId,onClick,glow}){
     {glow&&<polygon points={top} fill="rgba(253,224,71,.4)" stroke="#f59e0b" strokeWidth="2" filter="url(#glow)" style={{animation:'tileGlow 1.4s ease-out forwards',pointerEvents:'none'}}/>}
   </g>;
 }
-function TerrainDeco({type,cx,cy}){
-  if(type==='forest')return <g>{[-7,-1,5].map((dx,i)=>{const dy=[-5,4,-2][i];return <g key={i} transform={`translate(${cx+dx},${cy+dy})`}><polygon points="-4,2 0,-8 4,2" fill="#1a5c0a" opacity=".7"/><polygon points="-3,2 0,-5 3,2" fill="#2a7c1a" opacity=".5"/><rect x="-.5" y="2" width="1" height="3" fill="#4a3020" opacity=".5"/></g>;})}</g>;
-  if(type==='hill')return <g>{[[-5,1],[4,-1],[0,5]].map(([dx,dy],i)=><rect key={i} x={cx+dx-3} y={cy+dy} width="6" height="3.5" rx=".5" fill="#9a4a1a" opacity=".4"/>)}</g>;
-  if(type==='pasture')return <g>{[[-5,-3],[4,2],[-1,5]].map(([dx,dy],i)=><g key={i}><ellipse cx={cx+dx} cy={cy+dy} rx="3" ry="2" fill="#fff" opacity=".3"/><circle cx={cx+dx-1.5} cy={cy+dy} r="1" fill="#fff" opacity=".25"/></g>)}</g>;
-  if(type==='field')return <g>{[-6,-2,2,6].map((dx,i)=><line key={i} x1={cx+dx} y1={cy+7} x2={cx+dx+.5} y2={cy-3} stroke="#b89020" strokeWidth=".7" opacity=".35"/>)}</g>;
-  if(type==='mountain')return <g><polygon points={`${cx-8},${cy+5} ${cx-1},${cy-9} ${cx+5},${cy+5}`} fill="#6a6a7a" opacity=".4"/><polygon points={`${cx-1},${cy-9} ${cx},${cy-11} ${cx+1},${cy-9}`} fill="#e0e0e0" opacity=".5"/></g>;
-  if(type==='desert')return <g><ellipse cx={cx} cy={cy+2} rx="8" ry="2.5" fill="#c4a060" opacity=".25"/></g>;
-  return null;
+function TerrainDeco({type, cx, cy}) {
+  const icons = {forest:'🌲',hill:'🧱',pasture:'🐑',field:'🌾',mountain:'⛰️',desert:'🏜️'};
+  const subs = {
+    forest: [[-10,4,'🌲',8],[10,4,'🌲',8],[0,9,'🌲',8]],
+    pasture: [[-8,5,'🐑',7],[8,6,'🐑',7]],
+    field: [[-9,5,'🌾',7],[9,5,'🌾',7]],
+    mountain: [[-8,6,'⛏️',7]],
+    hill: [[-8,5,'🧱',7],[7,6,'🧱',7]],
+    desert: [[-6,6,'🌵',8]],
+  };
+  return <g>
+    <text x={cx} y={cy-4} textAnchor="middle" fontSize="18" style={{pointerEvents:'none',filter:'drop-shadow(0 1px 2px rgba(0,0,0,.3))'}}>{icons[type]}</text>
+    {(subs[type]||[]).map(([dx,dy,icon,sz],i) => <text key={i} x={cx+dx} y={cy+dy} textAnchor="middle" fontSize={sz} opacity=".5" style={{pointerEvents:'none'}}>{icon}</text>)}
+  </g>;
 }
 function Settlement({x,y,owner}){const c=OCOL[owner];return <g transform={`translate(${x},${y})`} style={{animation:'popIn .4s ease-out'}}><polygon points="-6,2 -6,-2 0,-7 6,-2 6,2" fill={c.l} stroke={c.s} strokeWidth="1.2"/><rect x="-6" y="2" width="12" height="5" fill={c.l} stroke={c.s} strokeWidth="1"/><rect x="-2" y="3" width="4" height="4" fill={c.m} opacity=".4"/></g>;}
 function CityB({x,y,owner}){const c=OCOL[owner];return <g transform={`translate(${x},${y})`} style={{animation:'popIn .4s ease-out'}}><rect x="-8" y="-2" width="16" height="9" fill={c.l} stroke={c.s} strokeWidth="1"/><rect x="-9" y="-6" width="6" height="8" fill={c.l} stroke={c.s} strokeWidth="1"/><polygon points="-9,-6 -6,-10 -3,-6" fill={c.m} stroke={c.s} strokeWidth=".8"/><rect x="3" y="-4" width="5" height="6" fill={c.l} stroke={c.s} strokeWidth="1"/><polygon points="3,-4 5.5,-8 8,-4" fill={c.m} stroke={c.s} strokeWidth=".8"/></g>;}
 function Road({x1,y1,x2,y2,owner}){const c=OCOL[owner];return <g><line x1={x1} y1={y1} x2={x2} y2={y2} stroke="rgba(0,0,0,.3)" strokeWidth="5" strokeLinecap="round"/><line x1={x1} y1={y1} x2={x2} y2={y2} stroke={c.s} strokeWidth="4" strokeLinecap="round"/><line x1={x1} y1={y1} x2={x2} y2={y2} stroke={c.m} strokeWidth="2.5" strokeLinecap="round"/></g>;}
 function Avatar({x,y,owner,vp,active}){const c=OCOL[owner];
   return <g transform={`translate(${x},${y})`} style={{filter:active?'drop-shadow(0 0 6px '+c.m+')':'none'}}>
+    {active && <circle cx="0" cy="0" r="25" fill="none" stroke={c.m} strokeWidth="1.5" opacity=".4" strokeDasharray="4,3" style={{animation:'pulse 1.5s infinite'}}/>}
     <ellipse cx="0" cy="-18" rx="10" ry="4" fill="none" stroke={c.m} strokeWidth="1.2" opacity=".6" style={{animation:active?'pulse 2s infinite':'none'}}/>
     <circle cx="0" cy="-10" r="9" fill={c.l} stroke={c.s} strokeWidth="1.5"/>
     <circle cx="-3" cy="-11" r="1.5" fill={c.s}/><circle cx="3" cy="-11" r="1.5" fill={c.s}/>
@@ -500,8 +507,8 @@ export default function SoloCatan(){
     setTimeout(processNpc,300);
   },[phase,npcActive,B,npcs,P,devDk,collectRes,spawnFlyCards,updateSpecials,finishTurn,addLog]);
 
-  const svgW = isPC ? 660 : SVG_W;
-  const svgH = isPC ? 660 : SVG_H;
+  const svgW = isPC ? 700 : SVG_W;
+  const svgH = isPC ? 700 : SVG_H;
   const ox = svgW/2 - bc.x, oy = svgH/2 - bc.y - 10;
   // v5: BUG-2 - clickable vertices/edges updated for 8-step init
   const clickV=phase==='init'?(pSt===0||pSt===6):phase==='build';
@@ -539,7 +546,7 @@ export default function SoloCatan(){
   </div></div>;}
 
   // ══════════ MAIN GAME ══════════
-  return <div style={{...S.ctn, ...(isPC ? {maxWidth:'100vw'} : {})}}>
+  return <div style={{...S.ctn, ...(isPC ? {maxWidth:'100%', width:'100%'} : {})}}>
     <div style={S.hdr}>
       <span style={{fontSize:12,color:'#78716c'}}>{mode==='score_attack'?'🎯':'⏱️'} T{turn}{mode==='score_attack'?'/15':''}</span>
       <span style={{fontSize:10,color:'#a8a29e'}}>🏆{mode==='score_attack'?hs.sa:hs.tt<999?hs.tt+'T':'-'}</span>
@@ -550,18 +557,20 @@ export default function SoloCatan(){
 
     <div style={isPC ? {display:'flex', flexDirection:'row', flex:1, overflow:'hidden'} : {display:'flex', flexDirection:'column', flex:1}}>
       {/* Board column */}
-      <div style={isPC ? {flex:1, display:'flex', alignItems:'center', justifyContent:'center', padding:16, minWidth:0} : S.bW}>
-        <svg viewBox={`0 0 ${svgW} ${svgH}`} style={{width:'100%',height:'100%', ...(isPC ? {maxHeight:'calc(100vh - 80px)'} : {})}}>
+      <div style={isPC ? {flex:1, display:'flex', alignItems:'center', justifyContent:'center', minWidth:0, padding:8, overflow:'hidden'} : S.bW}>
+        <svg viewBox={`0 0 ${svgW} ${svgH}`} style={{width:'100%',height:'100%', ...(isPC ? {maxHeight:'calc(100vh - 50px)'} : {})}}>
           <defs>
             <filter id="hs"><feDropShadow dx="1" dy="2" stdDeviation="1.5" floodOpacity=".3"/></filter>
             <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-            <radialGradient id="ocean" cx="50%" cy="45%"><stop offset="0%" stopColor="#bae6fd"/><stop offset="50%" stopColor="#93c5fd"/><stop offset="100%" stopColor="#dbeafe"/></radialGradient>
+            <radialGradient id="ocean" cx="50%" cy="45%"><stop offset="0%" stopColor="#7dd3fc"/><stop offset="35%" stopColor="#38bdf8"/><stop offset="70%" stopColor="#0ea5e9"/><stop offset="100%" stopColor="#0284c7"/></radialGradient>
             {Object.entries(TCOL).map(([t,cs])=><radialGradient key={t} id={`tg_${t}`} cx="40%" cy="30%"><stop offset="0%" stopColor={cs[2]}/><stop offset="55%" stopColor={cs[1]}/><stop offset="100%" stopColor={cs[0]}/></radialGradient>)}
+            <pattern id="seaShimmer" width="80" height="40" patternUnits="userSpaceOnUse"><ellipse cx="40" cy="20" rx="30" ry="8" fill="rgba(255,255,255,.06)"/><ellipse cx="0" cy="10" rx="20" ry="5" fill="rgba(255,255,255,.04)"/></pattern>
           </defs>
           <rect width={svgW} height={svgH} fill="url(#ocean)"/>
-          {[0,1,2,3,4].map(i=><ellipse key={i} cx={svgW/2} cy={svgH/2} rx={100+i*28} ry={80+i*22} fill="none" stroke="rgba(255,255,255,.4)" strokeWidth="1.5" style={{animation:`waveBob ${2+i*.3}s ease-in-out ${i*.2}s infinite`}}/>)}
-          <g transform={`translate(${ox},${oy})`}>
-            {coast&&<g><polygon points={coast.shore} fill="rgba(147,197,253,.4)" stroke="rgba(96,165,250,.3)" strokeWidth="1"/><polygon points={coast.beach} fill="#f5deb3" stroke="#d4a855" strokeWidth="1" opacity=".7"/></g>}
+          <rect width={svgW} height={svgH} fill="url(#seaShimmer)" style={{animation:'waveBob 4s ease-in-out infinite'}}/>
+          {[0,1,2,3,4].map(i=><ellipse key={i} cx={svgW/2} cy={svgH/2} rx={100+i*28} ry={80+i*22} fill="none" stroke="rgba(255,255,255,.25)" strokeWidth="2" style={{animation:`waveBob ${2+i*.3}s ease-in-out ${i*.2}s infinite`}}/>)}
+          <g transform={`translate(${ox},${oy})${isPC ? ' scale(1.25)' : ''}`}>
+            {coast&&<g><polygon points={coast.shore} fill="rgba(56,189,248,.25)" stroke="rgba(14,165,233,.3)" strokeWidth="1.5"/><polygon points={coast.beach} fill="#f5deb3" stroke="#d4a855" strokeWidth="2" opacity=".85"/></g>}
             {B&&[...B.tiles].sort((a,b)=>a.cy-b.cy).map(t=><Hex3D key={t.id} t={t} showR={showRobber} robId={B.robId} onClick={hTC} glow={glowTiles.has(t.id)}/>)}
             {B?.ports?.map((pe,i)=>{const e=B.E[pe.eid];if(!e)return null;const v1=B.V[e.vs[0]],v2=B.V[e.vs[1]];const mx=(v1.x+v2.x)/2,my=(v1.y+v2.y)/2;const d=Math.sqrt(mx*mx+my*my)||1;const px=mx+(mx/d)*12,py=my+(my/d)*12;const lb=pe.type==='3:1'?'3:1':'2:1';const re=pe.type!=='3:1'?REMJ[pe.type]:'⚓';
               return <g key={i}><line x1={mx} y1={my} x2={px} y2={py} stroke="#8B6914" strokeWidth="3" strokeLinecap="round"/><rect x={px-4} y={py-3} width="8" height="6" rx="1" fill="#6b4c2a" stroke="#4a3018" strokeWidth=".6"/><text x={px} y={py+11} textAnchor="middle" fontSize="6" fill="#f59e0b" fontWeight="bold" style={{pointerEvents:'none'}}>{lb}</text><text x={px} y={py+18} textAnchor="middle" fontSize="7" style={{pointerEvents:'none'}}>{re}</text></g>;})}
@@ -579,16 +588,17 @@ export default function SoloCatan(){
               const style={animationName:'flyCard',animationDuration:'1.1s',animationTimingFunction:'cubic-bezier(.2,.8,.3,1)',animationDelay:card.delay+'s',animationFillMode:'both','--sx':card.sx+'px','--sy':card.sy+'px','--rot':String(card.rot)};
               return <g key={card.id} transform={`translate(${card.tx},${card.ty})`}><g style={style}><rect x="-6" y="-9" width="12" height="18" rx="2" fill="rgba(0,0,0,.5)" stroke={card.color} strokeWidth="1.2"/><text x="0" y="2" textAnchor="middle" fontSize="10" style={{pointerEvents:'none'}}>{card.emoji}</text></g></g>;
             })}
-            {!isPC && [{ow:OW.P,vp:pVP,res:P?.resources||emR()},{ow:OW.N1,vp:n1VP,res:npcs.npc1?.resources||emR()},{ow:OW.N2,vp:n2VP,res:npcs.npc2?.resources||emR()}].map(({ow,vp,res})=>{
-              const s=SEATS[ow];const active=(phase==='build'||phase==='dice')&&!npcActive&&ow===OW.P||npcActive&&(ow===OW.N1||ow===OW.N2);
-              return <g key={ow}><Avatar x={s.x} y={s.y} owner={ow} vp={vp} active={active}/><ResCards x={s.x} y={s.y+36} res={res} owner={ow}/></g>;
-            })}
+            {[{ow:OW.P,vp:pVP,res:P?.resources||emR()},{ow:OW.N1,vp:n1VP,res:npcs.npc1?.resources||emR()},{ow:OW.N2,vp:n2VP,res:npcs.npc2?.resources||emR()}].map(({ow,vp,res})=>{
+  const s=isPC?({player:{x:0,y:165},npc1:{x:-155,y:-108},npc2:{x:155,y:-108}}[ow]):SEATS[ow];
+  const active=(phase==='build'||phase==='dice')&&!npcActive&&ow===OW.P||npcActive&&(ow===OW.N1||ow===OW.N2);
+  return <g key={ow}><Avatar x={s.x} y={s.y} owner={ow} vp={vp} active={active}/>{!isPC&&<ResCards x={s.x} y={s.y+36} res={res} owner={ow}/>}</g>;
+})}
           </g>
         </svg>
       </div>
 
       {/* Right panel (PC only) */}
-      {isPC && <div style={{width:320, flexShrink:0, background:'rgba(255,255,255,.7)', backdropFilter:'blur(12px)', borderLeft:'1px solid rgba(0,0,0,.06)', display:'flex', flexDirection:'column', gap:8, padding:'12px 14px', overflowY:'auto', maxHeight:'calc(100vh - 80px)'}}>
+      {isPC && <div style={{width:320, flexShrink:0, background:'rgba(255,255,255,.85)', backdropFilter:'blur(12px)', borderLeft:'1px solid rgba(0,0,0,.06)', display:'flex', flexDirection:'column', gap:8, padding:'12px 14px', overflowY:'auto', maxHeight:'calc(100vh - 50px)'}}>
         {/* Player cards */}
         {[{ow:OW.P,vp:pVP,res:P?.resources||emR()},{ow:OW.N1,vp:n1VP,res:npcs.npc1?.resources||emR()},{ow:OW.N2,vp:n2VP,res:npcs.npc2?.resources||emR()}].map(({ow,vp,res})=>{
           const active=(phase==='build'||phase==='dice')&&!npcActive&&ow===OW.P||npcActive&&(ow===OW.N1||ow===OW.N2);
