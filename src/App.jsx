@@ -12,8 +12,8 @@ const useIsPC = () => {
 
 const HEX=36,S3=Math.sqrt(3),DEPTH=8;
 const TC={forest:4,hill:3,pasture:4,field:4,mountain:3,desert:1};
-const TCOL={forest:['#15803d','#22c55e','#86efac'],hill:['#c2410c','#ea580c','#fb923c'],pasture:['#65a30d','#a3e635','#d9f99d'],field:['#ca8a04','#facc15','#fef08a'],mountain:['#57534e','#78716c','#d6d3d1'],desert:['#d97706','#fbbf24','#fde68a']};
-const TSIDE={forest:'#14532d',hill:'#92400e',pasture:'#3f6212',field:'#713f12',mountain:'#44403c',desert:'#b45309'};
+const TCOL={forest:['#15803d','#22c55e','#86efac'],hill:['#c2410c','#ea580c','#fb923c'],pasture:['#65a30d','#a3e635','#d9f99d'],field:['#a16207','#eab308','#fde047'],mountain:['#57534e','#78716c','#d6d3d1'],desert:['#b08050','#d4a86a','#f0dcc0']};
+const TSIDE={forest:'#14532d',hill:'#92400e',pasture:'#3f6212',field:'#854d0e',mountain:'#44403c',desert:'#8a6a40'};
 const RMAP={forest:'wood',hill:'brick',pasture:'sheep',field:'wheat',mountain:'ore'};
 const REMJ={wood:'🪵',brick:'🧱',sheep:'🐑',wheat:'🌾',ore:'⛏️'};
 const RCOL={wood:'#6d4c2a',brick:'#c1440e',sheep:'#5da040',wheat:'#daa520',ore:'#7a7a8a'};
@@ -160,7 +160,7 @@ function PlayerCard({owner, vp, res, active}) {
     <div style={{
       border: `1.5px solid ${active ? c.s : 'rgba(0,0,0,.07)'}`,
       borderRadius: 12,
-      padding: '10px 12px',
+      padding: '6px 10px',
       background: active ? c.l : '#ffffff',
       boxShadow: active ? `0 4px 16px ${c.m}33` : '0 1px 4px rgba(0,0,0,.04)',
       transition: 'all .3s',
@@ -501,7 +501,8 @@ export default function SoloCatan(){
 
   const svgW = isPC ? 700 : SVG_W;
   const svgH = isPC ? 700 : SVG_H;
-  const ox = svgW/2 - bc.x, oy = svgH/2 - bc.y - 10;
+  const boardScale = isPC ? 1.35 : 1;
+  const ox = svgW/2, oy = svgH/2;
   // v5: BUG-2 - clickable vertices/edges updated for 8-step init
   const clickV=phase==='init'?(pSt===0||pSt===6):phase==='build';
   const clickE=phase==='init'?(pSt===1||pSt===7):phase==='build'&&canAff(P?.resources||emR(),COST.road)&&(P?.rL||0)>0;
@@ -562,10 +563,10 @@ export default function SoloCatan(){
     {hint&&<div style={S.hint}>{hint}</div>}
     {npcMsg&&<div key={npcMsg.msg+turn+String(Math.random()).slice(2,6)} style={{...S.npcT,borderColor:OCOL[npcMsg.ow].m}}><span style={{color:OCOL[npcMsg.ow].m}}>{OCOL[npcMsg.ow].emoji} {npcMsg.msg}</span></div>}
 
-    <div style={isPC ? {display:'flex', flexDirection:'row', flex:1, overflow:'hidden'} : {display:'flex', flexDirection:'column', flex:1}}>
+    <div style={isPC ? {display:'flex', flex:1, overflow:'hidden', minHeight:0} : {display:'flex', flexDirection:'column', flex:1, minHeight:0}}>
       {/* Board column */}
-      <div style={isPC ? {flex:1, display:'flex', alignItems:'center', justifyContent:'center', minWidth:0, padding:8, overflow:'hidden'} : S.bW}>
-        <svg viewBox={`0 0 ${svgW} ${svgH}`} style={{width:'100%',height:'100%', ...(isPC ? {maxHeight:'calc(100vh - 50px)'} : {})}}>
+      <div style={isPC ? {flex:1, display:'flex', alignItems:'center', justifyContent:'center', minHeight:0, minWidth:0, overflow:'hidden'} : S.bW}>
+        <svg viewBox={`0 0 ${svgW} ${svgH}`} style={{width:'100%',height:'100%', ...(isPC ? {maxWidth:'calc(100vh - 60px)',maxHeight:'calc(100vh - 60px)'} : {})}}>
           <defs>
             <filter id="hs"><feDropShadow dx="1" dy="2" stdDeviation="1.5" floodOpacity=".3"/></filter>
             <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
@@ -576,7 +577,7 @@ export default function SoloCatan(){
           <rect width={svgW} height={svgH} fill="url(#ocean)"/>
           <rect width={svgW} height={svgH} fill="url(#seaShimmer)" style={{animation:'waveBob 4s ease-in-out infinite'}}/>
           {[0,1,2,3,4].map(i=><ellipse key={i} cx={svgW/2} cy={svgH/2} rx={100+i*28} ry={80+i*22} fill="none" stroke="rgba(255,255,255,.25)" strokeWidth="2" style={{animation:`waveBob ${2+i*.3}s ease-in-out ${i*.2}s infinite`}}/>)}
-          <g transform={`translate(${ox},${oy})${isPC ? ' scale(1.25)' : ''}`}>
+          <g transform={`translate(${ox},${oy}) scale(${boardScale}) translate(${-bc.x},${-bc.y - 8})`}>
             {coast&&<g><polygon points={coast.shore} fill="rgba(56,189,248,.25)" stroke="rgba(14,165,233,.3)" strokeWidth="1.5"/><polygon points={coast.beach} fill="#f5deb3" stroke="#d4a855" strokeWidth="2" opacity=".85"/></g>}
             {B&&[...B.tiles].sort((a,b)=>a.cy-b.cy).map(t=><Hex3D key={t.id} t={t} showR={showRobber} robId={B.robId} onClick={hTC} glow={glowTiles.has(t.id)}/>)}
             {B?.ports?.map((pe,i)=>{const e=B.E[pe.eid];if(!e)return null;const v1=B.V[e.vs[0]],v2=B.V[e.vs[1]];const mx=(v1.x+v2.x)/2,my=(v1.y+v2.y)/2;const d=Math.sqrt(mx*mx+my*my)||1;const px=mx+(mx/d)*12,py=my+(my/d)*12;const lb=pe.type==='3:1'?'3:1':'2:1';const re=pe.type!=='3:1'?REMJ[pe.type]:'⚓';
@@ -605,7 +606,7 @@ export default function SoloCatan(){
       </div>
 
       {/* Right panel (PC only) */}
-      {isPC && <div style={{width:320, flexShrink:0, background:'rgba(255,255,255,.85)', backdropFilter:'blur(12px)', borderLeft:'1px solid rgba(0,0,0,.06)', display:'flex', flexDirection:'column', gap:8, padding:'12px 14px', overflowY:'auto', maxHeight:'calc(100vh - 50px)'}}>
+      {isPC && <div style={{width:300, flexShrink:0, background:'rgba(255,255,255,.85)', backdropFilter:'blur(12px)', borderLeft:'1px solid rgba(0,0,0,.06)', display:'flex', flexDirection:'column', gap:6, padding:'8px 12px', overflowY:'auto'}}>
         {/* Player cards */}
         {[{ow:OW.P,vp:pVP,res:P?.resources||emR()},{ow:OW.N1,vp:n1VP,res:npcs.npc1?.resources||emR()},{ow:OW.N2,vp:n2VP,res:npcs.npc2?.resources||emR()}].map(({ow,vp,res})=>{
           const active=(phase==='build'||phase==='dice')&&!npcActive&&ow===OW.P||npcActive&&(ow===OW.N1||ow===OW.N2);
@@ -734,16 +735,16 @@ export default function SoloCatan(){
 }
 
 const S={
-  ctn:{width:'100%',maxWidth:540,margin:'0 auto',minHeight:'100vh',background:'linear-gradient(160deg,#fdf6ec 0%,#fef3c7 40%,#e0f2fe 100%)',fontFamily:"'DM Sans','Noto Sans JP',sans-serif",color:'#1c1917',display:'flex',flexDirection:'column',overflow:'hidden',position:'relative'},
+  ctn:{width:'100%',maxWidth:540,margin:'0 auto',height:'100vh',maxHeight:'100vh',background:'linear-gradient(160deg,#fdf6ec 0%,#fef3c7 40%,#e0f2fe 100%)',fontFamily:"'DM Sans','Noto Sans JP',sans-serif",color:'#1c1917',display:'flex',flexDirection:'column',overflow:'hidden',position:'relative'},
   tW:{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:20,gap:18},
   h1:{fontSize:36,fontWeight:900,color:'#1c1917',letterSpacing:2,fontFamily:"'Playfair Display','Noto Serif JP',serif",margin:0},
   tBs:{display:'flex',flexDirection:'column',gap:10,width:'100%',maxWidth:320},
   mB:{display:'flex',alignItems:'center',gap:14,padding:'16px 20px',background:'#ffffff',border:'1.5px solid rgba(0,0,0,.08)',borderRadius:16,cursor:'pointer',color:'#1c1917',textAlign:'left',position:'relative',boxShadow:'0 2px 12px rgba(0,0,0,.06)',transition:'all .2s'},
   hsT:{position:'absolute',top:8,right:12,fontSize:11,color:'#f59e0b',background:'rgba(245,158,11,.08)',padding:'2px 8px',borderRadius:8,fontWeight:700},
-  hdr:{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'10px 16px',background:'rgba(255,255,255,.85)',backdropFilter:'blur(12px)',borderBottom:'1px solid rgba(0,0,0,.06)',boxShadow:'0 1px 8px rgba(0,0,0,.04)'},
+  hdr:{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'6px 16px',height:36,flexShrink:0,background:'rgba(255,255,255,.85)',backdropFilter:'blur(12px)',borderBottom:'1px solid rgba(0,0,0,.06)'},
   hint:{textAlign:'center',padding:'6px 0',fontSize:12,fontWeight:700,color:'#f97316',background:'rgba(249,115,22,.06)',animation:'pulse 1.5s infinite'},
   npcT:{position:'absolute',top:42,left:'50%',transform:'translateX(-50%)',padding:'6px 14px',borderRadius:10,fontSize:13,fontWeight:600,zIndex:60,border:'1.5px solid',background:'#ffffff',backdropFilter:'blur(6px)',animation:'npcSlide 1.2s ease-out forwards',whiteSpace:'nowrap',boxShadow:'0 4px 20px rgba(0,0,0,.12)'},
-  bW:{flex:1,display:'flex',justifyContent:'center',alignItems:'center',minHeight:300},
+  bW:{flex:1,display:'flex',justifyContent:'center',alignItems:'center',minHeight:0,overflow:'hidden'},
   aR:{display:'flex',gap:5,padding:'4px 10px',justifyContent:'center',flexWrap:'wrap'},
   aB:{padding:'7px 12px',borderRadius:10,border:'none',cursor:'pointer',fontSize:12,fontWeight:700,fontFamily:'inherit'},
   aBOn:{background:'#ffffff',color:'#1c1917',border:'1.5px solid rgba(0,0,0,.1)',boxShadow:'0 2px 6px rgba(0,0,0,.06)'},
@@ -760,5 +761,5 @@ const S={
   sB:{padding:'10px 14px',background:'rgba(0,0,0,.03)',color:'#78716c',border:'1.5px solid rgba(0,0,0,.08)',borderRadius:12,cursor:'pointer',fontSize:13,fontFamily:'inherit'},
   rB:{position:'absolute',top:68,left:'50%',transform:'translateX(-50%)',background:'#ffffff',color:'#f97316',padding:'7px 14px',borderRadius:10,fontSize:13,fontWeight:700,zIndex:50,border:'1.5px solid rgba(249,115,22,.3)',whiteSpace:'nowrap',boxShadow:'0 4px 16px rgba(0,0,0,.1)'},
   goS:{width:'100%',maxWidth:300,display:'flex',flexDirection:'column',gap:6,background:'#ffffff',borderRadius:16,padding:16,boxShadow:'0 4px 20px rgba(0,0,0,.08)'},
-  ctnPC:{width:'100vw',maxWidth:'100vw',minHeight:'100vh',background:'linear-gradient(160deg,#fdf6ec 0%,#fef3c7 40%,#e0f2fe 100%)',fontFamily:"'DM Sans','Noto Sans JP',sans-serif",color:'#1c1917',display:'flex',flexDirection:'column',overflow:'hidden',position:'relative'},
+  ctnPC:{width:'100vw',maxWidth:'100vw',height:'100vh',maxHeight:'100vh',background:'linear-gradient(160deg,#fdf6ec 0%,#fef3c7 40%,#e0f2fe 100%)',fontFamily:"'DM Sans','Noto Sans JP',sans-serif",color:'#1c1917',display:'flex',flexDirection:'column',overflow:'hidden',position:'relative'},
 };
